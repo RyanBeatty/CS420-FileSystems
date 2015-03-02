@@ -22,6 +22,10 @@
 #include "list.h"
 #include <new>
 
+#ifdef CHANGED
+enum LOCK_STATUS {BUSY, FREE}; // defines states of a Lock object (either FREE or BUSY)
+#endif 
+
 // The following class defines a "semaphore" whose value is a non-negative
 // integer.  The semaphore has only two operations P() and V():
 //
@@ -81,6 +85,12 @@ class Lock {
   private:
     const char* name;				// for debugging
     // plus some other stuff you'll need to define
+
+    #ifdef CHANGED
+    int state;      //defines the current state of the lock, FREE or BUSY
+    List *queue;    // threads waiting to acquire lock
+    Thread *holdingThread;  // Reference to Thread object that currently holds the lock
+    #endif
 };
 
 // The following class defines a "condition variable".  A condition
@@ -133,5 +143,8 @@ class Condition {
   private:
     const char* name;
     // plus some other stuff you'll need to define
+    #ifdef CHANGED
+    List *queue;        //threads waiting to get signalled by the condition variable
+    #endif
 };
 #endif // SYNCH_H

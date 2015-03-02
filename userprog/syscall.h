@@ -57,8 +57,17 @@ typedef int SpaceId;
 /* Run the executable, stored in the Nachos file "name", and return the 
  * address space identifier
  */
-SpaceId Exec(char *name);
+
+ /* SpaceId Exec(char *name);*/
  
+/*
+	Implementation of Exec taking multiple arguments
+	In our implementation, a maximum of 10 arguments is allowed
+*/
+
+SpaceId Exec(char *name, char *args[], int shareflag);
+
+
 /* Only return once the the user program "id" has finished.  
  * Return the exit status.
  */
