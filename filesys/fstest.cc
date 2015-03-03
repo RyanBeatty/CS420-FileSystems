@@ -1,3 +1,4 @@
+#ifdef CHANGED
 // fstest.cc 
 //	Simple test routines for the file system.  
 //
@@ -58,11 +59,19 @@ Copy(char *from, char *to)
     
     openFile = fileSystem->Open(to);
     ASSERT(openFile != NULL);
+
+    printf("file length: %d\n", fileLength);
     
 // Copy the data in TransferSize chunks
+    int total = 0;
     buffer = new(std::nothrow) char[TransferSize];
-    while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0)
-	openFile->Write(buffer, amountRead);	
+    while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0) {
+    	// printf("amount read: %d\n", amountRead);
+        // for(int i = 0; i < amountRead; ++i)
+        //     putchar(buffer[i]);
+        total += openFile->Write(buffer, amountRead);
+        // printf("total amount written: %d\n", total);
+    }
     delete [] buffer;
 
 // Close the UNIX and the Nachos files
@@ -185,4 +194,35 @@ PerformanceTest()
     }
     stats->Print();
 }
+
+
+
+
+
+
+
+
+
+#else
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
 
