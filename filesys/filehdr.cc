@@ -46,25 +46,21 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     // ASSERT(fileSize <= MaxFileSize);
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
-    if(numSectors > NumDirect-1 && freeMap->NumClear() < numSectors + 1)
+    if(numSectors > NumDirect-1 && freeMap->NumClear() < numSectors + 1)          // if we need indirect blocks, must check for extra block allocation space
         return false;
 
     if (freeMap->NumClear() < numSectors)
 	   return false;		// not enough space
 
- //    for (int i = 0; i < numSectors; i++)
-	// dataSectors[i] = freeMap->Find();
- //    return true;
-
     printf("allocating\n");
     printf("numSectors: %d\n", numSectors);
-    for (int i = 0; i < NumDirect && i < numSectors; i++) {
+    for (int i = 0; i < NumDirect && i < numSectors; i++) {                     // allocate blocks in bitmap
         int s = freeMap->Find();
-        printf("s: %d\n", s);
+        // printf("s: %d\n", s);
         dataSectors[i] = s;
     }
 
-    if(numSectors > NumDirect - 1) {
+    if(numSectors > NumDirect - 1) {                                            // handle indirection
         DEBUG('f', "Allocating indirect block.\n");
 
         printf("numSectors: %d\n", numSectors);
@@ -74,27 +70,14 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
         printf("remaining sectors: %d\n", numSectors - (NumDirect - 1));
         printf("remaining bytes: %d\n", numBytes - ((NumDirect - 1) * SectorSize));
         
-        int remaining = numBytes - (SectorSize * (NumDirect - 1));
-        int iblockSector = dataSectors[NumDirect-1];
+        int remaining = numBytes - (SectorSize * (NumDirect - 1));             // remaining bytes to be allocated
+        int iblockSector = dataSectors[NumDirect-1];                           // sector where iblock resides
         FileHeader *iblock = new(std::nothrow) FileHeader;
-        ASSERT(iblock->Allocate(freeMap, remaining));
-        iblock->WriteBack(iblockSector);
+        ASSERT(iblock->Allocate(freeMap, remaining));                          // allocate the rest of the blocks
+        iblock->WriteBack(iblockSector);                                       // write back to reflect iblock allocation
         delete iblock;
     }
     
-    // if(NumDirect < numSectors) {
-    //     int indirectSector = freeMap->Find();
-    //     FileHeader *indirect = new (std::nothrow) FileHeader;
-    //     if(!indirect->Allocate(freeMap, numSectors - NumDirect)) {
-    //         ASSERT(false);
-    //         delete indirect;
-    //         return false;
-    //     }
-
-    //     indirect->WriteBack(indirectSector);
-    //     dataSectors[NumDirect-1] = indirectSector;
-    //     delete indirect;
-    // }
     printf("allocated\n");
     return true;
 }
@@ -163,22 +146,20 @@ FileHeader::WriteBack(int sector)
 int
 FileHeader::ByteToSector(int offset)
 {
-    // return(dataSectors[offset / SectorSize]);
-    // int sector = dataSectors[offset / SectorSize];
     ASSERT(offset < numBytes);
-    int vSector = offset / SectorSize;
-    if(vSector >= NumDirect - 1) {
+    int vBlock = offset / SectorSize;                                                  // calculate logical block number
+    if(vBlock >= NumDirect - 1) {                                                      // vBlock is in indirect block
         FileHeader *iblock = new(std::nothrow) FileHeader;
-        iblock->FetchFrom(dataSectors[NumDirect-1]);
-        int pSector = iblock->ByteToSector((vSector - (NumDirect - 1)) * SectorSize);
+        iblock->FetchFrom(dataSectors[NumDirect-1]);                                    // fetch indirect block from memory
+        int pBlock = iblock->ByteToSector((vBlock - (NumDirect - 1)) * SectorSize);   // find the corresponding physical block
         delete iblock;
 
-        // printf("psector from iblock: %d\n", pSector);
-        return pSector;
+        // printf("psector from iblock: %d\n", pBlock);
+        return pBlock;
     }
 
-    // printf("psector: %d\n", dataSectors[vSector]);
-    return dataSectors[vSector];
+    // printf("psector: %d\n", dataSectors[vBlock]);
+    return dataSectors[vBlock];
 }
 
 //----------------------------------------------------------------------
@@ -206,16 +187,16 @@ FileHeader::Print()
 
     printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
     for (i = 0; i < numSectors; i++)
-	printf("%d ", dataSectors[i]);
+        printf("%d ", dataSectors[i]);
     printf("\nFile contents:\n");
     for (i = k = 0; i < numSectors; i++) {
-    	synchDisk->ReadSector(dataSectors[i], data);
+        synchDisk->ReadSector(dataSectors[i], data);
         for (j = 0; (j < SectorSize) && (k < numBytes); j++, k++) {
-    	    if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
-        		printf("%c", data[j]);
+            if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
+                printf("%c", data[j]);
             else
-        		printf("\\%x", (unsigned char)data[j]);
-    	}
+                printf("\\%x", (unsigned char)data[j]);
+        }
         printf("\n"); 
     }
     delete [] data;
