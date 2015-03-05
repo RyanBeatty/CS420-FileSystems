@@ -41,48 +41,76 @@
 //	"fileSize" is the bit map of free disk sectors
 //----------------------------------------------------------------------
 
+// bool
+// FileHeader::Allocate(BitMap *freeMap, int fileSize)
+// { 
+//     DEBUG('a', "starting file header allocation\n");
+//     // // ASSERT(fileSize <= MaxFileSize);
+//     // numBytes = fileSize;
+//     // numSectors  = divRoundUp(fileSize, SectorSize);
+//     // if(numSectors > NumDirect-1 && freeMap->NumClear() < numSectors + 1)          // if we need indirect blocks, must check for extra block allocation space
+//     //     return false;
+
+//     // if (freeMap->NumClear() < numSectors)
+// 	   // return false;		// not enough space
+
+//     // printf("allocating\n");
+//     // printf("numSectors: %d\n", numSectors);
+//     // for (int i = 0; i < NumDirect && i < numSectors; i++) {                     // allocate blocks in bitmap
+//     //     int s = freeMap->Find();
+//     //     // printf("s: %d\n", s);
+//     //     dataSectors[i] = s;
+//     // }
+
+//     // if(numSectors > NumDirect - 1) {                                            // handle indirection
+//     //     DEBUG('f', "Allocating indirect block.\n");
+
+//     //     printf("numSectors: %d\n", numSectors);
+//     //     printf("numBytes: %d\n", numBytes);
+//     //     printf("cur allocated sectors: %d\n", NumDirect - 1);
+//     //     printf("cur bytes allocated: %d\n", (NumDirect - 1) * SectorSize);
+//     //     printf("remaining sectors: %d\n", numSectors - (NumDirect - 1));
+//     //     printf("remaining bytes: %d\n", numBytes - ((NumDirect - 1) * SectorSize));
+        
+//     //     int remaining = numBytes - (SectorSize * (NumDirect - 1));             // remaining bytes to be allocated
+//     //     int iblockSector = dataSectors[NumDirect-1];                           // sector where iblock resides
+//     //     FileHeader *iblock = new(std::nothrow) FileHeader;
+//     //     ASSERT(iblock->Allocate(freeMap, remaining));                          // allocate the rest of the blocks
+//     //     iblock->WriteBack(iblockSector);                                       // write back to reflect iblock allocation
+//     //     delete iblock;
+//     // }
+    
+//     // printf("allocated\n");
+//     // return true;
+
+//     numBytes = fileSize;
+//     numSectors  = divRoundUp(fileSize, SectorSize);
+//     if(freeMap->NumClear() < numSectors)
+//        return false;     // not enough space
+
+//     DEBUG('a', "enough space for file header\n");
+//     DoublyIndirectBlock *dblock;
+//     int allocated = 0;
+//     for(int i = 0; i < NumDirect; ++i, allocated += MAX_BLOCKS * MAX_BLOCKS) {
+//         if(numSectors - allocated < 0)
+//             break;
+//         dataSectors[i] = freeMap->Find();
+//         dblock = new(std::nothrow) DoublyIndirectBlock;
+//         ASSERT(dblock->Allocate(freeMap, fileSize - (allocated * SectorSize)));
+//         dblock->WriteBack(dataSectors[i]);
+//         delete dblock;
+//     }
+
+//     ASSERT(numSectors - allocated < 0);
+//     DEBUG('a', "file header allocated\n");
+//     return true;
+// }
+
+
 bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
     DEBUG('a', "starting file header allocation\n");
-    // // ASSERT(fileSize <= MaxFileSize);
-    // numBytes = fileSize;
-    // numSectors  = divRoundUp(fileSize, SectorSize);
-    // if(numSectors > NumDirect-1 && freeMap->NumClear() < numSectors + 1)          // if we need indirect blocks, must check for extra block allocation space
-    //     return false;
-
-    // if (freeMap->NumClear() < numSectors)
-	   // return false;		// not enough space
-
-    // printf("allocating\n");
-    // printf("numSectors: %d\n", numSectors);
-    // for (int i = 0; i < NumDirect && i < numSectors; i++) {                     // allocate blocks in bitmap
-    //     int s = freeMap->Find();
-    //     // printf("s: %d\n", s);
-    //     dataSectors[i] = s;
-    // }
-
-    // if(numSectors > NumDirect - 1) {                                            // handle indirection
-    //     DEBUG('f', "Allocating indirect block.\n");
-
-    //     printf("numSectors: %d\n", numSectors);
-    //     printf("numBytes: %d\n", numBytes);
-    //     printf("cur allocated sectors: %d\n", NumDirect - 1);
-    //     printf("cur bytes allocated: %d\n", (NumDirect - 1) * SectorSize);
-    //     printf("remaining sectors: %d\n", numSectors - (NumDirect - 1));
-    //     printf("remaining bytes: %d\n", numBytes - ((NumDirect - 1) * SectorSize));
-        
-    //     int remaining = numBytes - (SectorSize * (NumDirect - 1));             // remaining bytes to be allocated
-    //     int iblockSector = dataSectors[NumDirect-1];                           // sector where iblock resides
-    //     FileHeader *iblock = new(std::nothrow) FileHeader;
-    //     ASSERT(iblock->Allocate(freeMap, remaining));                          // allocate the rest of the blocks
-    //     iblock->WriteBack(iblockSector);                                       // write back to reflect iblock allocation
-    //     delete iblock;
-    // }
-    
-    // printf("allocated\n");
-    // return true;
-
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
     if(freeMap->NumClear() < numSectors)
@@ -90,18 +118,19 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 
     DEBUG('a', "enough space for file header\n");
     DoublyIndirectBlock *dblock;
-    int allocated = 0;
-    for(int i = 0; i < NumDirect; ++i, allocated += MAX_BLOCKS * MAX_BLOCKS) {
-        if(numSectors - allocated < 0)
-            break;
+    int remaining = numSectors;
+    for(int i = 0; i < NumDirect && remaining >= 0; ++i) {
         dataSectors[i] = freeMap->Find();
+        ASSERT(dataSectors[i] != EMPTY_BLOCK);
         dblock = new(std::nothrow) DoublyIndirectBlock;
-        ASSERT(dblock->Allocate(freeMap, fileSize - (allocated * SectorSize)));
+        int allocated = dblock->Allocate(freeMap, numSectors);
+        ASSERT(allocated != -1);
         dblock->WriteBack(dataSectors[i]);
+        remaining -= allocated;
         delete dblock;
     }
 
-    ASSERT(numSectors - allocated < 0);
+    ASSERT(remaining <= 0);
     DEBUG('a', "file header allocated\n");
     return true;
 }
@@ -187,9 +216,9 @@ FileHeader::ByteToSector(int offset)
 
     int vBlock = offset / SectorSize;
     DoublyIndirectBlock *dblock = new(std::nothrow) DoublyIndirectBlock;
-    dblock->FetchFrom(dataSectors[vBlock / NumDirect]);
-    int pBlock = dblock->ByteToSector((vBlock % NumDirect) * SectorSize);
-    printf("filehdr ByteToSector: %d\n", pBlock);
+    dblock->FetchFrom(dataSectors[vBlock / (MAX_BLOCKS * MAX_BLOCKS)]);
+    int pBlock = dblock->ByteToSector(offset);
+    // printf("filehdr ByteToSector: %d\n", pBlock);
     ASSERT(pBlock >= 0 && pBlock < NumSectors);
     delete dblock;
     return pBlock;
