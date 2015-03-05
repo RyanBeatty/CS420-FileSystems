@@ -131,10 +131,11 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 
     // read in all the full and partial sectors that we need
     buf = new(std::nothrow) char[numSectors * SectorSize];
-    for (i = firstSector; i <= lastSector; i++)	
-        synchDisk->ReadSector(hdr->ByteToSector(i * SectorSize), 
-					&buf[(i - firstSector) * SectorSize]);
-
+    for (i = firstSector; i <= lastSector; i++)	{
+        int s = hdr->ByteToSector(i * SectorSize);
+        ASSERT(s >= 0 && s < NumSectors);
+        synchDisk->ReadSector(s, &buf[(i - firstSector) * SectorSize]);
+    }
     // copy the part we want
     bcopy(&buf[position - (firstSector * SectorSize)], into, numBytes);
     delete [] buf;

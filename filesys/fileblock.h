@@ -37,9 +37,9 @@
 
 class IndirectBlock {
 public:
-	IndirectBlock();
+	// IndirectBlock();
 
-	bool Allocate(BitMap *bitMap, int fileSize);// Initialize a indirect block
+	bool Allocate(BitMap *bitMap, int numSectors);// Initialize a indirect block
 
     void Deallocate(BitMap *bitMap);  		// De-allocate this file's 
 						//  data blocks
@@ -65,7 +65,7 @@ private:
 
 class DoublyIndirectBlock {
 public:
-	DoublyIndirectBlock();
+	// DoublyIndirectBlock();
 
 	bool Allocate(BitMap *bitMap, int fileSize);// Initialize a indirect block
 

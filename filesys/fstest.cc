@@ -74,6 +74,8 @@ Copy(char *from, char *to)
     }
     delete [] buffer;
 
+    printf("finsihed copying file\n");
+
 // Close the UNIX and the Nachos files
     delete openFile;
     fclose(fp);
