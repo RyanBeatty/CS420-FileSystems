@@ -64,3 +64,9 @@ matmult.o: matmult.c
 matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	../bin/coff2noff matmult.coff matmult
+
+fstest1.o: fstest1.c
+	$(CC) $(CFLAGS) -c fstest1.c
+fstest1: fstest1.o start.o
+	$(LD) $(LDFLAGS) start.o fstest1.o -o fstest1.coff
+	../bin/coff2noff fstest1.coff fstest1
