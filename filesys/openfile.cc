@@ -31,6 +31,7 @@ OpenFile::OpenFile(int sector)
     hdr = new(std::nothrow) FileHeader();
     hdr->FetchFrom(sector);
     seekPosition = 0;
+    hdrSector = sector;
 }
 
 //----------------------------------------------------------------------
@@ -81,9 +82,18 @@ OpenFile::Read(char *into, int numBytes)
 int
 OpenFile::Write(char *into, int numBytes)
 {
-   int result = WriteAt(into, numBytes, seekPosition);
-   seekPosition += result;
-   return result;
+    if(seekPosition + numBytes > hdr->FileLength()) {
+        BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
+        ASSERT(hdr->Allocate(freeMap, numBytes));
+        hdr->WriteBack(hdrSector);
+        freeMap->WriteBack(freeMapFile);
+        delete freeMap;
+    }
+
+    int result = WriteAt(into, numBytes, seekPosition);
+    seekPosition += result;
+    return result;
 }
 
 //----------------------------------------------------------------------

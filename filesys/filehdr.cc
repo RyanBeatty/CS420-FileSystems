@@ -67,10 +67,6 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 
     DEBUG('a', "enough space for file header\n");
 
-
-    // for(int i = 0; i < NumDirect; ++i)
-    //     dataSectors[i] = EMPTY_BLOCK;
-
     DoublyIndirectBlock *dblock;
     int allocated = 0;
     for(int i = 0; i < NumDirect && allocated < numSectors; ++i) {  // allocate all sectors
