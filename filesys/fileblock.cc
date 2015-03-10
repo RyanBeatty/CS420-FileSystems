@@ -30,11 +30,15 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 
 void 
 IndirectBlock::Deallocate(BitMap *freeMap) {
+	DEBUG('r', "beginning indirect block deallocation\n");
 	for(int i = 0, sector; i < MAX_BLOCKS; ++i) {		// deallocate all sectors
 		sector = dataSectors[i];
+		if(sector == EMPTY_BLOCK)
+			continue;
 		ASSERT(freeMap->Test(sector));						// assert that sector to be cleared is in use
 		freeMap->Clear(sector);
 	}
+	DEBUG('r', "finished indirect block deallocation\n");
 }
 
 void 
@@ -91,6 +95,7 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 
 void 
 DoublyIndirectBlock::Deallocate(BitMap *freeMap) {
+	DEBUG('r', "beginning doublyindirect deallocation\n");
 	IndirectBlock *iblock;
 	for(int i = 0, sector; i < MAX_BLOCKS; ++i) {		// deallocate all blocks
 		sector = dataSectors[i];
@@ -100,9 +105,11 @@ DoublyIndirectBlock::Deallocate(BitMap *freeMap) {
 		iblock = new(std::nothrow) IndirectBlock;
 		iblock->FetchFrom(sector);						// load up filehdr
 		iblock->Deallocate(freeMap);						// deallocate filehdr
+		ASSERT(freeMap->Test(sector));					// just to be sure nothing weird happened
 		freeMap->Clear(sector);							
 		delete iblock;
 	}
+	DEBUG('r', "finished doubly indirect deallocation\n");
 }
 
 void 

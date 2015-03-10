@@ -54,14 +54,14 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     DEBUG('a', "enough space for file header\n");
     DoublyIndirectBlock *dblock;
     int remaining = numSectors;
-    for(int i = 0; i < NumDirect && remaining >= 0; ++i) {
+    for(int i = 0; i < NumDirect && remaining >= 0; ++i) {          // allocate all sectors
         dataSectors[i] = freeMap->Find();
-        ASSERT(dataSectors[i] != EMPTY_BLOCK);
+        ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
         dblock = new(std::nothrow) DoublyIndirectBlock;
-        int allocated = dblock->Allocate(freeMap, numSectors);
-        ASSERT(allocated != -1);
-        dblock->WriteBack(dataSectors[i]);
-        remaining -= allocated;
+        int allocated = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
+        ASSERT(allocated != -1);                                    // assert doubly indirect block allocation succeeded
+        dblock->WriteBack(dataSectors[i]);                          // write doubly indirect block back
+        remaining -= allocated;                                     // decrease remaining sectors to be allocated
         delete dblock;
     }
 
@@ -80,19 +80,21 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 void 
 FileHeader::Deallocate(BitMap *freeMap)
 {
-    for (int i = 0; i < numSectors; i++) {
-	ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
-	freeMap->Clear((int) dataSectors[i]);
+    DEBUG('r', "beginning filehdr deallocation\n");
+    DoublyIndirectBlock *dblock;
+    for(int i = 0, sector; i < numSectors; ++i) {
+        sector = dataSectors[i];
+        if(sector == EMPTY_BLOCK)
+            continue;
+        ASSERT(freeMap->Test(sector));
+        dblock = new(std::nothrow) DoublyIndirectBlock;
+        dblock->FetchFrom(sector);
+        dblock->Deallocate(freeMap);
+        ASSERT(freeMap->Test(sector));
+        freeMap->Clear(sector);
+        delete dblock;
     }
-    // for(int i = 0; i < NumDirect; ++i) {
-    //     ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
-    //     freeMap->Clear((int) dataSectors[i]);
-    // }
-
-    // FileHeader *iblock = new(std::nothrow) FileHeader;
-    // iblock->FetchFrom(dataSectors[NumDirect-1]);
-    // iblock->Deallocate(freeMap);
-    // delete iblock;
+    DEBUG('r', "finished filehdr deallocation\n");
 }
 
 //----------------------------------------------------------------------
