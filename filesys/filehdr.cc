@@ -60,6 +60,7 @@ bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
     DEBUG('a', "starting file header allocation\n");
+    printf("number of sectors requested for allocation: %d\n", divRoundUp(fileSize, SectorSize));
     numBytes += fileSize;
     numSectors  += divRoundUp(fileSize, SectorSize);
     if(freeMap->NumClear() < numSectors)
