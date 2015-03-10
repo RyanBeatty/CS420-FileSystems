@@ -77,7 +77,7 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
         dataSectors[i] = freeMap->Find();
         ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
         dblock = new(std::nothrow) DoublyIndirectBlock();
-        int result = dblock->Allocate(freeMap, numSectors - allocated);      // allocate doubly indirect block
+        int result = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
         ASSERT(result != -1);                                    // assert doubly indirect block allocation succeeded
         dblock->WriteBack(dataSectors[i]);                          // write doubly indirect block back
         allocated += result;                                     // decrease remaining sectors to be allocated
