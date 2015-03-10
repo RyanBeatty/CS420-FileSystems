@@ -37,7 +37,7 @@
 
 class IndirectBlock {
 public:
-	// IndirectBlock();
+	IndirectBlock();
 
 	int Allocate(BitMap *bitMap, int numSectors);// Initialize a indirect block
 
@@ -65,7 +65,7 @@ private:
 
 class DoublyIndirectBlock {
 public:
-	// DoublyIndirectBlock();
+	DoublyIndirectBlock();
 
 	int Allocate(BitMap *bitMap, int numSectors);// Initialize a indirect block
 

@@ -6,6 +6,10 @@
 #include "system.h"
 #include <string>
 
+IndirectBlock::IndirectBlock() {
+	for(int i = 0; i < MAX_BLOCKS; ++i)
+		dataSectors[i] = EMPTY_BLOCK;
+}
 
 int 
 IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file header, 
@@ -18,8 +22,8 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 
 	DEBUG('a', "enough space for single indirect allocation\n");
 	int i = 0;
-	for(; i < MAX_BLOCKS; ++i)
-		dataSectors[i] = EMPTY_BLOCK;
+	// for(; i < MAX_BLOCKS; ++i)
+	// 	dataSectors[i] = EMPTY_BLOCK;
 	for(i = 0; i < MAX_BLOCKS && i < numSectors; ++i) {		// allocate space for all blocks
 		dataSectors[i] = freeMap->Find();
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
@@ -62,6 +66,10 @@ IndirectBlock::ByteToSector(int offset) {
 
 
 //############################################################################################################//
+DoublyIndirectBlock::DoublyIndirectBlock() {
+	for(int i = 0; i < MAX_BLOCKS; ++i)
+		dataSectors[i] = EMPTY_BLOCK;
+}
 
 int 
 DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file header, 
@@ -76,12 +84,12 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 
 	DEBUG('a', "enough space for doublyindirect allocation\n");
 	int i = 0;
-	for(; i < MAX_BLOCKS; ++i)
-		dataSectors[i] = EMPTY_BLOCK;
+	// for(; i < MAX_BLOCKS; ++i)
+	// 	dataSectors[i] = EMPTY_BLOCK;
 	for(i = 0; i < MAX_BLOCKS && numSectors >= 0; ++i)	{	// allocate space for all indirect blocks
 		dataSectors[i] = freeMap->Find();																// allocate block for indirect block
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
-		iblock = new(std::nothrow) IndirectBlock;
+		iblock = new(std::nothrow) IndirectBlock();
 		int allocated = iblock->Allocate(freeMap, numSectors);
 		ASSERT(allocated != -1);
 		iblock->WriteBack(dataSectors[i]);															// write indirect block hdr back to disk
@@ -102,7 +110,7 @@ DoublyIndirectBlock::Deallocate(BitMap *freeMap) {
 		if(sector == EMPTY_BLOCK)						// skip empty block
 			continue;
 		ASSERT(freeMap->Test(sector));					// assert that the sector we are deallocating is in use
-		iblock = new(std::nothrow) IndirectBlock;
+		iblock = new(std::nothrow) IndirectBlock();
 		iblock->FetchFrom(sector);						// load up filehdr
 		iblock->Deallocate(freeMap);						// deallocate filehdr
 		ASSERT(freeMap->Test(sector));					// just to be sure nothing weird happened
@@ -125,7 +133,7 @@ DoublyIndirectBlock::FetchFrom(int sector) {
 int 
 DoublyIndirectBlock::ByteToSector(int offset) {
 	int vBlock = offset / SectorSize;											// calc virtual block we want
-	IndirectBlock *iblock = new(std::nothrow) IndirectBlock;
+	IndirectBlock *iblock = new(std::nothrow) IndirectBlock();
 	iblock->FetchFrom(dataSectors[vBlock / MAX_BLOCKS]);							// load up indirect block hdr that contains the virtual block we want
 	int pBlock = iblock->ByteToSector((vBlock % MAX_BLOCKS) * SectorSize);		// find the corresponding physical block
 	delete iblock;

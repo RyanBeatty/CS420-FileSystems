@@ -59,7 +59,7 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     for(int i = 0; i < NumDirect && remaining > 0; ++i) {          // allocate all sectors
         dataSectors[i] = freeMap->Find();
         ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
-        dblock = new(std::nothrow) DoublyIndirectBlock;
+        dblock = new(std::nothrow) DoublyIndirectBlock();
         int allocated = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
         ASSERT(allocated != -1);                                    // assert doubly indirect block allocation succeeded
         dblock->WriteBack(dataSectors[i]);                          // write doubly indirect block back
@@ -89,7 +89,7 @@ FileHeader::Deallocate(BitMap *freeMap)
         if(sector == EMPTY_BLOCK)
             continue;
         ASSERT(freeMap->Test(sector));
-        dblock = new(std::nothrow) DoublyIndirectBlock;
+        dblock = new(std::nothrow) DoublyIndirectBlock();
         dblock->FetchFrom(sector);
         dblock->Deallocate(freeMap);
         ASSERT(freeMap->Test(sector));
@@ -139,7 +139,7 @@ int
 FileHeader::ByteToSector(int offset)
 {
     int vBlock = offset / SectorSize;
-    DoublyIndirectBlock *dblock = new(std::nothrow) DoublyIndirectBlock;
+    DoublyIndirectBlock *dblock = new(std::nothrow) DoublyIndirectBlock();
     dblock->FetchFrom(dataSectors[vBlock / (MAX_BLOCKS * MAX_BLOCKS)]);
     int pBlock = dblock->ByteToSector(offset);
     // printf("filehdr ByteToSector: %d\n", pBlock);
