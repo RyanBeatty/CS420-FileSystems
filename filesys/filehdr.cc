@@ -49,25 +49,43 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
     if(freeMap->NumClear() < numSectors)
-       return false;     // not enough space
+        return false;     // not enough space
 
     DEBUG('a', "enough space for file header\n");
-    DoublyIndirectBlock *dblock;
-    int remaining = numSectors;
+    // DoublyIndirectBlock *dblock;
+    // int remaining = numSectors;
+    // for(int i = 0; i < NumDirect; ++i)
+    //     dataSectors[i] = EMPTY_BLOCK;
+    // for(int i = 0; i < NumDirect && remaining > 0; ++i) {          // allocate all sectors
+    //     dataSectors[i] = freeMap->Find();
+    //     ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
+    //     dblock = new(std::nothrow) DoublyIndirectBlock();
+    //     int allocated = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
+    //     ASSERT(allocated != -1);                                    // assert doubly indirect block allocation succeeded
+    //     dblock->WriteBack(dataSectors[i]);                          // write doubly indirect block back
+    //     remaining -= allocated;                                     // decrease remaining sectors to be allocated
+    //     delete dblock;
+    // }
+
+    // ASSERT(remaining <= 0);
+
     for(int i = 0; i < NumDirect; ++i)
         dataSectors[i] = EMPTY_BLOCK;
-    for(int i = 0; i < NumDirect && remaining > 0; ++i) {          // allocate all sectors
+
+    DoublyIndirectBlock *dblock;
+    int allocated = 0;
+    for(int i = 0; i < NumDirect && allocated < numSectors; ++i) {  // allocate all sectors
         dataSectors[i] = freeMap->Find();
         ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
         dblock = new(std::nothrow) DoublyIndirectBlock();
-        int allocated = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
-        ASSERT(allocated != -1);                                    // assert doubly indirect block allocation succeeded
+        int result = dblock->Allocate(freeMap, numSectors);      // allocate doubly indirect block
+        ASSERT(result != -1);                                    // assert doubly indirect block allocation succeeded
         dblock->WriteBack(dataSectors[i]);                          // write doubly indirect block back
-        remaining -= allocated;                                     // decrease remaining sectors to be allocated
+        allocated += result;                                     // decrease remaining sectors to be allocated
         delete dblock;
     }
 
-    ASSERT(remaining <= 0);
+    ASSERT(numSectors - allocated <= 0);
     DEBUG('a', "file header allocated\n");
     return true;
 }
@@ -98,6 +116,29 @@ FileHeader::Deallocate(BitMap *freeMap)
     }
     DEBUG('r', "finished filehdr deallocation\n");
 }
+
+// bool
+// FileHeader::Expand(BitMap *freeMap, int sizeBytes) {
+//     DEBUG('e', "starting fileheader expand\n");
+//     if(sizeBytes < 0)
+//         return false;
+//     int remSectors  = divRoundUp(sizeBytes, SectorSize);
+//     if(freeMap->NumClear() < remSectors)
+//         return false;
+
+//     DEBUG('e', "enough space for fileheader expand\n");
+//     // DoublyIndirectBlock *dblock;
+//     // for(int i = 0; i < NumDirect && remSectors > 0; ++i) {
+//     //     if(dataSectors[i] == EMPTY_BLOCK)
+//     //         dataSectors[i] = freeMap->Find();
+//     //     ASSERT(dataSectors[i] != EMPTY_BLOCK);
+//     //     dblock = new(std::nothrow) DoublyIndirectBlock();
+//     //     dblock->Allocate(freeMap, remSectors);
+//     }
+
+//     DEBUG('e', "finished fileheader expand\n");
+//     return true;
+// }
 
 //----------------------------------------------------------------------
 // FileHeader::FetchFrom

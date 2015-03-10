@@ -83,21 +83,6 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 	if(freeMap->NumClear() < numSectors)					// failure if not enough free sectors on disk
 		return -1;
 
-	// DEBUG('a', "enough space for doublyindirect allocation\n");
-	// int i = 0;
-	// for(i = 0; i < MAX_BLOCKS && numSectors >= 0; ++i)	{	// allocate space for all indirect blocks
-	// 	dataSectors[i] = freeMap->Find();						// allocate block for indirect block
-	// 	ASSERT(dataSectors[i] != EMPTY_BLOCK);
-	// 	iblock = new(std::nothrow) IndirectBlock();
-	// 	int allocated = iblock->Allocate(freeMap, numSectors);
-	// 	ASSERT(allocated != -1);
-	// 	iblock->WriteBack(dataSectors[i]);					// write indirect block hdr back to disk
-	// 	numSectors -= allocated;
-	// 	delete iblock;
-	// }
-
-	// DEBUG('a', "doubly indirect block allocated\n");
-	// return i * MAX_BLOCKS;
 	DEBUG('a', "enough space for doublyindirect allocation\n");
 	int allocated = 0;
 	for(int i = 0; i < MAX_BLOCKS && allocated < numSectors; ++i)	{	// allocate space for all indirect blocks
