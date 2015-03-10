@@ -8,7 +8,7 @@
 void clear(char *b) {
 	int i = 0;
 	for(; i < N; ++i)
-		buffer[i] = '\0';
+		b[i] = '\0';
 }
 
 int main() {
@@ -25,7 +25,7 @@ int main() {
 		Exit(1);
 	}
 
-	fdin = Open(OUTFILE);
+	fdout = Open(OUTFILE);
 	if(fdin < 0) {
 		Write("error: could not open res.txt\n", sizeof("error: could not open res.txt\n"), 1);
 		Close(fdin);
