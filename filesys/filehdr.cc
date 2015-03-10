@@ -54,7 +54,9 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     DEBUG('a', "enough space for file header\n");
     DoublyIndirectBlock *dblock;
     int remaining = numSectors;
-    for(int i = 0; i < NumDirect && remaining >= 0; ++i) {          // allocate all sectors
+    for(int i = 0; i < NumDirect; ++i)
+        dataSectors[i] = EMPTY_BLOCK;
+    for(int i = 0; i < NumDirect && remaining > 0; ++i) {          // allocate all sectors
         dataSectors[i] = freeMap->Find();
         ASSERT(dataSectors[i] != EMPTY_BLOCK);                      // assert that allocation was good
         dblock = new(std::nothrow) DoublyIndirectBlock;
@@ -82,7 +84,7 @@ FileHeader::Deallocate(BitMap *freeMap)
 {
     DEBUG('r', "beginning filehdr deallocation\n");
     DoublyIndirectBlock *dblock;
-    for(int i = 0, sector; i < numSectors; ++i) {
+    for(int i = 0, sector; i < NumDirect; ++i) {
         sector = dataSectors[i];
         if(sector == EMPTY_BLOCK)
             continue;
