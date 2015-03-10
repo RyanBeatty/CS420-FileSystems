@@ -84,10 +84,10 @@ OpenFile::Write(char *into, int numBytes)
 {
     if(seekPosition + numBytes > hdr->FileLength()) {
         BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
-        freeMap->FetchFrom(freeMapFile);
+        freeMap->FetchFrom(fileSystem->freeMapFile());
         ASSERT(hdr->Allocate(freeMap, numBytes));
         hdr->WriteBack(hdrSector);
-        freeMap->WriteBack(freeMapFile);
+        freeMap->WriteBack(fileSystem->freeMapFile());
         delete freeMap;
     }
 
