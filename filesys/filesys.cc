@@ -346,10 +346,12 @@ FileSystem::Print()
     delete directory;
 }
 
+OpenFile *
 FileSystem::GetFreeMapFile() {
     return freeMapFile;
 }
 
+OpenFile *
 FileSystem::GetDirectoryFile() {
     return directoryFile;
 }
