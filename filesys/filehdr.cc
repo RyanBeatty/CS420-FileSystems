@@ -59,14 +59,14 @@ FileHeader::FileHeader() {
 bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
-    DEBUG('a', "starting file header allocation\n");
+    DEBUG('e', "starting file header allocation\n");
     printf("number of sectors requested for allocation: %d\n", divRoundUp(fileSize, SectorSize));
     numBytes += fileSize;
     numSectors  += divRoundUp(fileSize, SectorSize);
     if(freeMap->NumClear() < numSectors)
         return false;     // not enough space
 
-    DEBUG('a', "enough space for file header\n");
+    DEBUG('e', "enough space for file header\n");
 
     DoublyIndirectBlock *dblock;
     int allocated = 0;
@@ -82,7 +82,7 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     }
 
     ASSERT(numSectors - allocated <= 0);
-    DEBUG('a', "file header allocated\n");
+    DEBUG('e', "file header allocated\n");
     return true;
 }
 
