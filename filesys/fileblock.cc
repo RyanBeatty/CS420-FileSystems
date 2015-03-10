@@ -90,7 +90,7 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 			dataSectors[i] = freeMap->Find();							// allocate block for indirect block
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
 		iblock = new(std::nothrow) IndirectBlock();
-		int result = iblock->Allocate(freeMap, numSectors);
+		int result = iblock->Allocate(freeMap, numSectors - allocated);
 		ASSERT(result != -1);
 		iblock->WriteBack(dataSectors[i]);							// write indirect block hdr back to disk
 		allocated += result;

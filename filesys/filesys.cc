@@ -86,8 +86,8 @@ FileSystem::FileSystem(bool format)
     if (format) {
         BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
         Directory *directory = new(std::nothrow) Directory(NumDirEntries);
-	FileHeader *mapHdr = new(std::nothrow) FileHeader;
-	FileHeader *dirHdr = new(std::nothrow) FileHeader;
+	FileHeader *mapHdr = new(std::nothrow) FileHeader();
+	FileHeader *dirHdr = new(std::nothrow) FileHeader();
 
         DEBUG('f', "Formatting the file system.\n");
 
@@ -199,7 +199,7 @@ FileSystem::Create(char *name, int initialSize)
         else if (!directory->Add(name, sector))
             success = false;	// no space in directory
 	else {
-    	    hdr = new(std::nothrow) FileHeader;
+    	    hdr = new(std::nothrow) FileHeader();
 	    if (!hdr->Allocate(freeMap, initialSize))
             	success = false;	// no space on disk for data
 	    else {	
@@ -273,7 +273,7 @@ FileSystem::Remove(char *name)
        delete directory;
        return false;			 // file not found 
     }
-    fileHdr = new(std::nothrow) FileHeader;
+    fileHdr = new(std::nothrow) FileHeader();
     fileHdr->FetchFrom(sector);
 
     freeMap = new(std::nothrow) BitMap(NumSectors);
@@ -321,8 +321,8 @@ FileSystem::List()
 void
 FileSystem::Print()
 {
-    FileHeader *bitHdr = new(std::nothrow) FileHeader;
-    FileHeader *dirHdr = new(std::nothrow) FileHeader;
+    FileHeader *bitHdr = new(std::nothrow) FileHeader();
+    FileHeader *dirHdr = new(std::nothrow) FileHeader();
     BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
 
