@@ -21,15 +21,16 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 		return -1;
 
 	DEBUG('a', "enough space for single indirect allocation\n");
-	int i = 0;
-	// for(; i < MAX_BLOCKS; ++i)
-	// 	dataSectors[i] = EMPTY_BLOCK;
-	for(i = 0; i < MAX_BLOCKS && i < numSectors; ++i) {		// allocate space for all blocks
+	int allocated = 0;
+	for(int i = 0; i < MAX_BLOCKS && i < numSectors; ++i) {		// allocate space for all blocks
+		if(dataSectors[i] != EMPTY_BLOCK)
+			continue;
 		dataSectors[i] = freeMap->Find();
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
+		++allocated;
 	}
 	DEBUG('a', "single indirect allocated\n");
-	return i;
+	return allocated;
 }
 
 void 
