@@ -13,14 +13,14 @@ IndirectBlock::IndirectBlock() {
 
 int 
 IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file header, 
-	DEBUG('a', "starting single indirect allocation\n");
+	DEBUG('e', "starting single indirect allocation\n");
 	if(numSectors < 0)
 		return -1;
 
 	if(freeMap->NumClear() < numSectors)					// failure if not enough free sectors on disk
 		return -1;
 
-	DEBUG('a', "enough space for single indirect allocation\n");
+	DEBUG('e', "enough space for single indirect allocation\n");
 	int allocated = 0;
 	for(int i = 0; i < MAX_BLOCKS && i < numSectors; ++i) {		// allocate space for all blocks
 		if(dataSectors[i] != EMPTY_BLOCK)
@@ -29,7 +29,7 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
 		++allocated;
 	}
-	DEBUG('a', "single indirect allocated\n");
+	DEBUG('e', "single indirect allocated\n");
 	return allocated;
 }
 
@@ -76,14 +76,14 @@ int
 DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file header, 
 	IndirectBlock *iblock;
 	
-	DEBUG('a', "starting doublyindirect allocation\n");
+	DEBUG('e', "starting doublyindirect allocation\n");
 	// printf("numSectors requested allocation: %d\n", numSectors);
 	if(numSectors < 0)
 		return -1;
 	if(freeMap->NumClear() < numSectors)					// failure if not enough free sectors on disk
 		return -1;
 
-	DEBUG('a', "enough space for doublyindirect allocation\n");
+	DEBUG('e', "enough space for doublyindirect allocation\n");
 	int allocated = 0;
 	for(int i = 0; i < MAX_BLOCKS && allocated < numSectors; ++i)	{	// allocate space for all indirect blocks
 		if(dataSectors[i] == EMPTY_BLOCK)
@@ -97,7 +97,7 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 		delete iblock;
 	}
 
-	DEBUG('a', "doubly indirect block allocated\n");
+	DEBUG('e', "doubly indirect block allocated\n");
 	return allocated;
 }
 
