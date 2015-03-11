@@ -30,10 +30,6 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 		++allocated;
 	}
 
-	printf("iblock: ");
-	for(int i = 0; i < MAX_BLOCKS; ++i)
-		printf("%d, ", dataSectors[i]);
-	printf("\n");
 	DEBUG('e', "single indirect allocated\n");
 	return allocated;
 }
@@ -66,7 +62,6 @@ IndirectBlock::ByteToSector(int offset) {
 	int vBlock = offset / SectorSize;
 	ASSERT(vBlock < MAX_BLOCKS);				// assert that it is a valid virtual block
 	int pBlock = dataSectors[vBlock];
-	// printf("iblock psector: %d\n", pBlock);
 	ASSERT(pBlock >= 0 && pBlock < NumSectors);
 	return pBlock;
 }
@@ -99,18 +94,11 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 			iblock->FetchFrom(dataSectors[i]);
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
 		int result = iblock->Allocate(freeMap, numSectors - allocated);
-		printf("i: %d; result: %d\n", i, result);
 		ASSERT(result >= 0);
 		iblock->WriteBack(dataSectors[i]);							// write indirect block hdr back to disk
 		allocated += result;
 		delete iblock;
 	}
-
-	printf("dblock: ");
-	for(int i = 0; i < MAX_BLOCKS; ++i)
-		printf("%d, ", dataSectors[i]);
-	printf("\n");
-	DEBUG('e', "single indirect allocated\n");
 
 	DEBUG('e', "doubly indirect block allocated\n");
 	return allocated;

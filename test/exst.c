@@ -1,7 +1,7 @@
 
 
 #define N 100
-#define INFILE "toobig2"
+#define INFILE "in.txt"
 #define OUTFILE "res.txt"
 #include "syscall.h"
 
@@ -21,7 +21,7 @@ int main() {
 	
 	fdin = Open(INFILE);
 	if(fdin < 0) {
-		Write("error: could not open toobig2\n", sizeof("error: could not open toobig2\n"), 1);
+		Write("error: could not open file in.txt\n", sizeof("error: could not open file in.txt\n"), 1);
 		Exit(1);
 	}
 
