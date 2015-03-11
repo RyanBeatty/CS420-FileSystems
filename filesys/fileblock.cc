@@ -29,6 +29,11 @@ IndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a file 
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
 		++allocated;
 	}
+
+	printf("iblock: ");
+	for(int i = 0; i < MAX_BLOCKS; ++i)
+		printf("%d, ", dataSectors[i]);
+	printf("\n");
 	DEBUG('e', "single indirect allocated\n");
 	return allocated;
 }
@@ -61,7 +66,7 @@ IndirectBlock::ByteToSector(int offset) {
 	int vBlock = offset / SectorSize;
 	ASSERT(vBlock < MAX_BLOCKS);				// assert that it is a valid virtual block
 	int pBlock = dataSectors[vBlock];
-	printf("iblock psector: %d\n", pBlock);
+	// printf("iblock psector: %d\n", pBlock);
 	ASSERT(pBlock >= 0 && pBlock < NumSectors);
 	return pBlock;
 }
