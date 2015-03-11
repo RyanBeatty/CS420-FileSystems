@@ -93,8 +93,10 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 	int allocated = 0;
 	for(int i = 0; i < MAX_BLOCKS && allocated < numSectors; ++i)	{	// allocate space for all indirect blocks
 		iblock = new(std::nothrow) IndirectBlock();
-		if(dataSectors[i] == EMPTY_BLOCK)
+		if(dataSectors[i] == EMPTY_BLOCK) {
 			dataSectors[i] = freeMap->Find();							// allocate block for indirect block
+			printf("trueeeeeeeeeeeee\n");
+		}
 		else
 			iblock->FetchFrom(dataSectors[i]);
 		ASSERT(dataSectors[i] != EMPTY_BLOCK);
