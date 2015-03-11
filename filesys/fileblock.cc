@@ -105,6 +105,12 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 		delete iblock;
 	}
 
+	printf("dblock: ");
+	for(int i = 0; i < MAX_BLOCKS; ++i)
+		printf("%d, ", dataSectors[i]);
+	printf("\n");
+	DEBUG('e', "single indirect allocated\n");
+
 	DEBUG('e', "doubly indirect block allocated\n");
 	return allocated;
 }
