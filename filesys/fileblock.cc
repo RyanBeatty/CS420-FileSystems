@@ -61,6 +61,7 @@ IndirectBlock::ByteToSector(int offset) {
 	int vBlock = offset / SectorSize;
 	ASSERT(vBlock < MAX_BLOCKS);				// assert that it is a valid virtual block
 	int pBlock = dataSectors[vBlock];
+	printf("iblock psector: %d\n", pBlock);
 	ASSERT(pBlock >= 0 && pBlock < NumSectors);
 	return pBlock;
 }
