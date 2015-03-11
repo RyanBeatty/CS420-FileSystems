@@ -77,7 +77,7 @@ DoublyIndirectBlock::Allocate(BitMap *freeMap, int numSectors) { // Initialize a
 	IndirectBlock *iblock;
 	
 	DEBUG('e', "starting doublyindirect allocation\n");
-	// printf("numSectors requested allocation: %d\n", numSectors);
+	printf("numSectors requested dblock allocation: %d\n", numSectors);
 	if(numSectors < 0)
 		return -1;
 	if(freeMap->NumClear() < numSectors)					// failure if not enough free sectors on disk
