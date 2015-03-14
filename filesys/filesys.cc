@@ -199,6 +199,7 @@ FileSystem::Create(char *name, int initialSize)
         else if (!directory->Add(name, sector))
             success = false;	// no space in directory
 	    else {
+            ASSERT(directory->Find(name) != -1);
     	    hdr = new(std::nothrow) FileHeader();
 	        if (!hdr->Allocate(freeMap, initialSize))
                 success = false;	// no space on disk for data
