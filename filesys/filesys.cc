@@ -198,19 +198,18 @@ FileSystem::Create(char *name, int initialSize)
             success = false;		// no free block for file header 
         else if (!directory->Add(name, sector))
             success = false;	// no space in directory
-	else {
+	    else {
     	    hdr = new(std::nothrow) FileHeader();
-	    if (!hdr->Allocate(freeMap, initialSize))
-            	success = false;	// no space on disk for data
-	    else {	
-	    	success = true;
-		// everthing worked, flush all changes back to disk
+	        if (!hdr->Allocate(freeMap, initialSize))
+                success = false;	// no space on disk for data
+	        else {	
+	    	    success = true; // everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
     	    	directory->WriteBack(directoryFile);
     	    	freeMap->WriteBack(freeMapFile);
-	    }
+	        }
             delete hdr;
-	}
+	    }
         delete freeMap;
     }
     delete directory;
@@ -324,7 +323,7 @@ FileSystem::Print()
     FileHeader *bitHdr = new(std::nothrow) FileHeader();
     FileHeader *dirHdr = new(std::nothrow) FileHeader();
     BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
-    Directory *directory = new(std::nothrow) Directory(NumDirEntries);
+    Directory *directory = new(std::nothrow) Directory(/NumDirEntries);
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);
