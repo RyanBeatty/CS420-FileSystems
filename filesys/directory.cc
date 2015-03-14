@@ -94,10 +94,11 @@ Directory::WriteBack(OpenFile *file)
 int
 Directory::FindIndex(char *name)
 {
-    
+    printf("find index print\n");
     for(int i = 0; i < tableSize; ++i) {
         printf("entry: %s\n", table[i].name);
     }
+    printf("end find index print\n");
     for (int i = 0; i < tableSize; i++)
         if (table[i].inUse && !strncmp(table[i].name, name, FileNameMaxLen))
 	    return i;
@@ -164,6 +165,7 @@ Directory::Add(char *name, int newSector)
             table[i].inUse = true;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
+            printf("return true in ADD\n");
             return true;
         }
     }
