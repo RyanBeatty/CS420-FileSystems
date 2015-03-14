@@ -100,6 +100,7 @@ Directory::WriteBack(OpenFile *file)
     file->Seek(0);
 
     printf("write back finished\n");
+    fflush(stdout);
     // free(str);
 }
 
