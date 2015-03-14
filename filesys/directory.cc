@@ -78,6 +78,7 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
+    printf("writeback table size: %d\n", tableSize);
     file->Seek(0);                          // make sure we are at beggining of directory
     file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
     file->Seek(0);
@@ -117,7 +118,7 @@ Directory::FindIndex(char *name)
 int
 Directory::Find(char *name)
 {
-    printf("table size: %d\n", tableSize);
+    // printf("table size: %d\n", tableSize);
     int i = FindIndex(name);
 
     if (i != -1)
@@ -161,9 +162,9 @@ Directory::Add(char *name, int newSector)
     table = newTable;
     tableSize *= 2;
 
-    for(int i = 0; i < tableSize; ++i) {
-        printf("entry: %s\n", table[i].name);
-    }
+    // for(int i = 0; i < tableSize; ++i) {
+    //     printf("entry: %s\n", table[i].name);
+    // }
     for (int i = 0; i < tableSize; i++) {
         if (!table[i].inUse) {
             table[i].inUse = true;
