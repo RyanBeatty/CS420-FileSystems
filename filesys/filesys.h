@@ -67,6 +67,15 @@ class FileSystem {
 };
 
 #else // FILESYS
+
+extern OpenFile* freeMapFile;   // Bit map of free disk blocks,
+          // represented as a file
+extern OpenFile* directoryFile;   // "Root" directory -- list of 
+          // file names, represented as a file
+
+OpenFile *GetFreeMapFile();
+OpenFile *GetDirectoryFile();
+
 class FileSystem {
   public:
     FileSystem(bool format);		// Initialize the file system.
@@ -87,14 +96,14 @@ class FileSystem {
 
     void Print();			// List all the files and their contents
 
-    OpenFile *GetFreeMapFile();
-    OpenFile *GetDirectoryFile();
+    // OpenFile *GetFreeMapFile();
+    // OpenFile *GetDirectoryFile();
 
-  private:
-   OpenFile* freeMapFile;		// Bit map of free disk blocks,
-					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
-					// file names, represented as a file
+  // private:
+  //  OpenFile* freeMapFile;		// Bit map of free disk blocks,
+		// 			// represented as a file
+  //  OpenFile* directoryFile;		// "Root" directory -- list of 
+		// 			// file names, represented as a file
 };
 
 #endif // FILESYS

@@ -67,6 +67,12 @@
 #define NumDirEntries 		10
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
+OpenFile* freeMapFile;   // Bit map of free disk blocks,
+          // represented as a file
+OpenFile* directoryFile;   // "Root" directory -- list of 
+          // file names, represented as a file
+
+
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
 // 	Initialize the file system.  If format = true, the disk has
@@ -347,12 +353,12 @@ FileSystem::Print()
 }
 
 OpenFile *
-FileSystem::GetFreeMapFile() {
+GetFreeMapFile() {
     return freeMapFile;
 }
 
 OpenFile *
-FileSystem::GetDirectoryFile() {
+GetDirectoryFile() {
     return directoryFile;
 }
 
