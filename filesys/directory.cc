@@ -65,7 +65,7 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
-    printf("fetch start\n");
+    // printf("fetch start\n");
     // char *str = (char *) calloc(16, sizeof(char));
     // snprintf(str, 16, "%d", tableSize);
 
@@ -74,7 +74,7 @@ Directory::FetchFrom(OpenFile *file)
     file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
     file->Seek(0);
 
-    printf("fetch finished\n");
+    // printf("fetch finished\n");
     // tableSize = strtol(str, (char **) NULL, 10);
     // free(str);
 }
@@ -89,7 +89,7 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    printf("writeback table size: %d\n", tableSize);
+    // printf("writeback table size: %d\n", tableSize);
 
     // char *str = (char *) calloc(16, sizeof(char));
     // snprintf(str, 16, "%d", tableSize);
@@ -99,7 +99,7 @@ Directory::WriteBack(OpenFile *file)
     file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
     file->Seek(0);
 
-    printf("write back finished\n");
+    // printf("write back finished\n");
     fflush(stdout);
     // free(str);
 }
