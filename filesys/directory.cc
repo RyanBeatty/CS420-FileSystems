@@ -71,7 +71,7 @@ Directory::FetchFrom(OpenFile *file)
 
     file->Seek(0);
     file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
-    file->Read((char *) tableSize, sizeof(int));
+    file->Read((char *) &tableSize, sizeof(int));
     file->Seek(0);
 
     printf("fetch finished\n");
@@ -96,7 +96,7 @@ Directory::WriteBack(OpenFile *file)
 
     file->Seek(0);                          // make sure we are at beggining of directory
     file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
-    file->Write((char *) tableSize, sizeof(int));
+    file->Write((char *) &tableSize, sizeof(int));
     file->Seek(0);
 
     printf("write back finished\n");
