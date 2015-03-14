@@ -352,11 +352,13 @@ FileSystem::Print()
     delete directory;
 }
 
+// getter method for freeMapFile
 OpenFile *
 GetFreeMapFile() {
     return freeMapFile;
 }
 
+//getter method for directoryFile
 OpenFile *
 GetDirectoryFile() {
     return directoryFile;

@@ -68,13 +68,15 @@ class FileSystem {
 
 #else // FILESYS
 
+// these variables are no longer apart of the FileSystem class because of
+// needed changes to make extendable files work
 extern OpenFile* freeMapFile;   // Bit map of free disk blocks,
           // represented as a file
 extern OpenFile* directoryFile;   // "Root" directory -- list of 
           // file names, represented as a file
 
-OpenFile *GetFreeMapFile();
-OpenFile *GetDirectoryFile();
+OpenFile *GetFreeMapFile();   // getter method
+OpenFile *GetDirectoryFile(); // getter method
 
 class FileSystem {
   public:
