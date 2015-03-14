@@ -65,7 +65,7 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
-    char *str = calloc(16, sizeof(char));
+    char *str = (char *) calloc(16, sizeof(char));
     sprintf("%d", tableSize);
 
     file->Seek(0);
@@ -89,7 +89,7 @@ Directory::WriteBack(OpenFile *file)
 {
     printf("writeback table size: %d\n", tableSize);
 
-    char *str = calloc(16, sizeof(char));
+    char *str = (char *) calloc(16, sizeof(char));
     sprintf("%d", tableSize);
 
     file->Seek(0);                          // make sure we are at beggining of directory
