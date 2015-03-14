@@ -20,6 +20,7 @@
 
 #include "openfile.h"
 
+#define INCREASE_FACTOR 2   // factor by which the capacity of the directory will expand by
 #define FileNameMaxLen 		9	// for simplicity, we assume 
 					// file names are <= 9 characters long
 

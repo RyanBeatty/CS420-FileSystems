@@ -65,21 +65,14 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
-    printf("fetch start\n");
-    // char *str = (char *) calloc(16, sizeof(char));
-    // snprintf(str, 16, "%d", tableSize);
-    int size = 0;
+    int size = 0;           // temp to read table size
 
-    file->Seek(0);
-    file->Read((char *) &size, sizeof(int));
-    if(size > tableSize)
+    file->Seek(0);                                  // make sure we are at the beginning of the file
+    file->Read((char *) &size, sizeof(int));        // read table size
+    if(size > tableSize)                            // if we have expanded, expand
         Expand(size);
-    file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
-    file->Seek(0);
-
-    printf("fetch finished\n");
-    // tableSize = strtol(str, (char **) NULL, 10);
-    // free(str);
+    file->Read((char *) table, tableSize * sizeof(DirectoryEntry)); // read table
+    file->Seek(0);                                  // reset seek position
 }
 
 //----------------------------------------------------------------------
@@ -92,19 +85,10 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    // printf("writeback table size: %d\n", tableSize);
-
-    // char *str = (char *) calloc(16, sizeof(char));
-    // snprintf(str, 16, "%d", tableSize);
-
     file->Seek(0);                          // make sure we are at beggining of directory
-    file->Write((char *) &tableSize, sizeof(int));
-    file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
-    file->Seek(0);
-
-    // printf("write back finished\n");
-    fflush(stdout);
-    // free(str);
+    file->Write((char *) &tableSize, sizeof(int));  // write directory length first
+    file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // write table
+    file->Seek(0);                          // reset seek position to be safe
 }
 
 //----------------------------------------------------------------------
@@ -118,11 +102,6 @@ Directory::WriteBack(OpenFile *file)
 int
 Directory::FindIndex(char *name)
 {
-    // printf("find index print\n");
-    // for(int i = 0; i < tableSize; ++i) {
-    //     printf("entry: %s\n", table[i].name);
-    // }
-    // printf("end find index print\n");
     for (int i = 0; i < tableSize; i++)
         if (table[i].inUse && !strncmp(table[i].name, name, FileNameMaxLen))
 	    return i;
@@ -141,7 +120,6 @@ Directory::FindIndex(char *name)
 int
 Directory::Find(char *name)
 {
-    // printf("table size: %d\n", tableSize);
     int i = FindIndex(name);
 
     if (i != -1)
@@ -174,17 +152,12 @@ Directory::Add(char *name, int newSector)
         return true;
 	}
 
-    Expand(tableSize * 2);
-
-    // for(int i = 0; i < tableSize; ++i) {
-    //     printf("entry: %s\n", table[i].name);
-    // }
-    for (int i = 0; i < tableSize; i++) {
+    Expand(tableSize * INCREASE_FACTOR);        // increase capacity
+    for (int i = 0; i < tableSize; i++) {       // repeat search
         if (!table[i].inUse) {
             table[i].inUse = true;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-            printf("return true in ADD\n");
             return true;
         }
     }
@@ -247,10 +220,15 @@ Directory::Print()
     delete hdr;
 }
 
+//----------------------------------------------------------------------
+// Directory::Expand
+//  expand the table to have as many entries as "size"
+//----------------------------------------------------------------------
+
 void
 Directory::Expand(int size) {
-    DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[size];
-    for(int i = 0; i < size; ++i) {
+    DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[size];  // create new table
+    for(int i = 0; i < size; ++i) {     // copy over previous table
         if(i < tableSize)
             newTable[i] = table[i];
         else
