@@ -117,6 +117,7 @@ Directory::FindIndex(char *name)
 int
 Directory::Find(char *name)
 {
+    printf("table size: %d\n", tableSize);
     int i = FindIndex(name);
 
     if (i != -1)
