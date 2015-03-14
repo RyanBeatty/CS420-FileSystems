@@ -78,7 +78,10 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+    // (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+    file->Seek(0);                          // make sure we are at beggining of directory
+    file->Write((char *) table, tableSize * sizeof(DirectoryEntry));
+    file->Seek(0);
 }
 
 //----------------------------------------------------------------------
