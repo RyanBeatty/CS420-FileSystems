@@ -66,7 +66,7 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     char *str = (char *) calloc(16, sizeof(char));
-    snprintf(str, "%d", tableSize, 16);
+    snprintf(str, 16, "%d", tableSize);
 
     file->Seek(0);
     file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
@@ -90,7 +90,7 @@ Directory::WriteBack(OpenFile *file)
     printf("writeback table size: %d\n", tableSize);
 
     char *str = (char *) calloc(16, sizeof(char));
-    snprintf(str, "%d", tableSize, 16);
+    snprintf(str, 16, "%d", tableSize);
 
     file->Seek(0);                          // make sure we are at beggining of directory
     file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
