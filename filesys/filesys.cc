@@ -323,7 +323,7 @@ FileSystem::Print()
     FileHeader *bitHdr = new(std::nothrow) FileHeader();
     FileHeader *dirHdr = new(std::nothrow) FileHeader();
     BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
-    Directory *directory = new(std::nothrow) Directory(/NumDirEntries);
+    Directory *directory = new(std::nothrow) Directory(NumDirEntries);
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);
