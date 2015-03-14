@@ -78,9 +78,8 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    // (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
     file->Seek(0);                          // make sure we are at beggining of directory
-    file->Write((char *) table, tableSize * sizeof(DirectoryEntry));
+    file->Write((char *) table, tableSize * sizeof(DirectoryEntry));    // for exstensible files
     file->Seek(0);
 }
 
@@ -144,6 +143,25 @@ Directory::Add(char *name, int newSector)
             table[i].sector = newSector;
         return true;
 	}
+
+    DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[tableSize * 2];
+    for(int i = 0; i < tableSize * 2; ++i) {
+        if(i < tableSize)
+            newTable[i] = table[i];
+        else
+            newTable[i].inUse = false;
+    }
+    tableSize *= 2;
+
+    for (int i = 0; i < tableSize; i++)
+        if (!table[i].inUse) {
+            table[i].inUse = true;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+        return true;
+    }
+
+    ASSERT(false);
     return false;	// no space.  Fix when we have extensible files.
 }
 
