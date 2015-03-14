@@ -68,9 +68,12 @@ Directory::FetchFrom(OpenFile *file)
     // printf("fetch start\n");
     // char *str = (char *) calloc(16, sizeof(char));
     // snprintf(str, 16, "%d", tableSize);
+    int size = 0;
 
     file->Seek(0);
-    file->Read((char *) &tableSize, sizeof(int));
+    file->Read((char *) &size, sizeof(int));
+    if(size > tableSize)
+        Expand(size);
     file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
     file->Seek(0);
 
@@ -171,16 +174,7 @@ Directory::Add(char *name, int newSector)
         return true;
 	}
 
-    DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[tableSize * 2];
-    for(int i = 0; i < tableSize * 2; ++i) {
-        if(i < tableSize)
-            newTable[i] = table[i];
-        else
-            newTable[i].inUse = false;
-    }
-    delete[] table;
-    table = newTable;
-    tableSize *= 2;
+    Expand(tableSize * 2);
 
     // for(int i = 0; i < tableSize; ++i) {
     //     printf("entry: %s\n", table[i].name);
@@ -253,7 +247,19 @@ Directory::Print()
     delete hdr;
 }
 
-
+void
+DirectoryEntry::Expand(int size) {
+    DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[size];
+    for(int i = 0; i < size; ++i) {
+        if(i < tableSize)
+            newTable[i] = table[i];
+        else
+            newTable[i].inUse = false;
+    }
+    delete[] table;
+    table = newTable;
+    tableSize *= 2;
+}
 
 
 
