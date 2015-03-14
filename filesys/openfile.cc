@@ -82,19 +82,33 @@ OpenFile::Read(char *into, int numBytes)
 int
 OpenFile::Write(char *into, int numBytes)
 {
+    printf("openfile write start\n");
+    fflush(stdout);
     if(seekPosition + numBytes > hdr->FileLength()) {
+        printf("openfile expand start\n");
+        fflush(stdout);
         BitMap *freeMap = new(std::nothrow) BitMap(NumSectors);
         // ASSERT(fileSytem != NULL);
         // ASSERT(fileSytem->GetFreeMapFile() != NULL);
         freeMap->FetchFrom(GetFreeMapFile());
+        printf("fetched freemap\n");
+        fflush(stdout);
         ASSERT(hdr->Allocate(freeMap, numBytes));
+        printf("allocated\n");
+        fflush(stdout);
         hdr->WriteBack(hdrSector);
+        printf("wrote hdr back\n");
+        fflush(stdout);
         freeMap->WriteBack(GetFreeMapFile());
         delete freeMap;
+        printf("openfile expand finish\n");
+        fflush(stdout);
     }
 
     int result = WriteAt(into, numBytes, seekPosition);
     seekPosition += result;
+    printf("openfile write finish\n");
+    fflush(stdout);
     return result;
 }
 
