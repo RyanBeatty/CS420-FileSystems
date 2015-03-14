@@ -155,6 +155,10 @@ Directory::Add(char *name, int newSector)
     table = newTable;
     tableSize *= 2;
 
+    for(int i = 0; i < tableSize; ++i) {
+        printf("entry: %s\n", table[i].name);
+    }
+
     for (int i = 0; i < tableSize; i++)
         if (!table[i].inUse) {
             table[i].inUse = true;
