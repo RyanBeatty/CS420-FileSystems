@@ -65,7 +65,7 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
-    // printf("fetch start\n");
+    printf("fetch start\n");
     // char *str = (char *) calloc(16, sizeof(char));
     // snprintf(str, 16, "%d", tableSize);
     int size = 0;
@@ -77,7 +77,7 @@ Directory::FetchFrom(OpenFile *file)
     file->Read((char *) table, tableSize * sizeof(DirectoryEntry));
     file->Seek(0);
 
-    // printf("fetch finished\n");
+    printf("fetch finished\n");
     // tableSize = strtol(str, (char **) NULL, 10);
     // free(str);
 }
@@ -248,7 +248,7 @@ Directory::Print()
 }
 
 void
-DirectoryEntry::Expand(int size) {
+Directory::Expand(int size) {
     DirectoryEntry *newTable = new(std::nothrow) DirectoryEntry[size];
     for(int i = 0; i < size; ++i) {
         if(i < tableSize)
