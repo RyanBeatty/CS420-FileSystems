@@ -151,6 +151,8 @@ Directory::Add(char *name, int newSector)
         else
             newTable[i].inUse = false;
     }
+    delete[] table;
+    table = newTable;
     tableSize *= 2;
 
     for (int i = 0; i < tableSize; i++)
