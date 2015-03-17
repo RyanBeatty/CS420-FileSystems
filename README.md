@@ -35,5 +35,84 @@ IndirectBlock:
 
 		* FetchFrom(int): reads the "dataSectors" array from disk
 
-		* int ByteToSector(int) 
+		* int ByteToSector(int)
 
+
+
+
+
+
+
+
+
+
+
+------------------------TESTING-----------------------------------------
+
+
+############
+share1.c
+sharekid1.c
+############
+
+share1.c tests that child processes inherit the same open files and file descriptors as
+ther parent process. share1.c begins by reading in 20 characters from the file "data" (which contains the letters a-z)
+and then forks/execs sharekid1 which simply reads one more character, prints the character, and exits. The parent
+process waits for the child to exit before reading one more character.
+
+files to cp over:
+/test/data
+/test/share1
+/test/sharekid1
+
+run:
+./nachos -x share1
+
+***Output****
+Output Open returned descriptor 2
+PARENT read 20 bytes
+Data from the read was: <abcdefghijklmnopqrst>
+KID about to read from inherited file
+KID read 1 bytes
+Data from the read was: <u>
+KID read from closed file returned -1
+PARENT off Join with value of 17
+PARENT about to read a byte from shared file
+PARENT read 1 bytes
+Data from the read was: <v>
+PARENT read from closed file returned -1
+
+
+
+###########
+share2.c
+sharekid2.c
+###########
+
+share2.c tests that concurrent processes that open the same file recieve seperate, private seek positions
+within the file. share2.c begins by reading and printing 20 characters from the file "data" and then forks/execs
+sharekid2.c which opens the file "data" and reads and prints 10 characters (which should be the first 10 
+characters in the file) before exiting. share2.c waits for the child to exit and reads and prints one more 
+character (which should be the 21 character from the file) before exiting.
+
+files to cp over:
+/test/data
+/test/share2
+/test/sharekid2
+
+run:
+./nachos -x share2
+
+****Output****
+Output Open returned descriptor 2
+PARENT read 20 bytes
+Data from the read was: <abcdefghijklmnopqrst>
+KID Output Open returned descriptor 3
+KID read 10 bytes
+Data from the read was: <abcdefghij>
+KID read from closed file returned -1
+PARENT off Join with value of 17
+PARENT about to read a byte from shared file
+PARENT read 1 bytes
+Data from the read was: <u>
+PARENT read from closed file returned -1

@@ -115,7 +115,6 @@ FileSystem::FileSystem(bool format)
     // on it!).
 
         DEBUG('f', "Writing headers back to disk.\n");
-    directoryLock->Acquire();                               // need to do this so an error isn't raised
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
 
@@ -193,12 +192,16 @@ FileSystem::Create(char *name, int initialSize)
 
     DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
 
+    directoryLock->Acquire();
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
 
+    printf("got disk\n");
+
     if (directory->Find(name) != -1)
       success = false;			// file is already in directory
-    else {	
+    else {
+        diskmapLock->Acquire();	
         freeMap = new(std::nothrow) BitMap(NumSectors);
         freeMap->FetchFrom(freeMapFile);
         sector = freeMap->Find();	// find a sector to hold the file header
@@ -220,7 +223,9 @@ FileSystem::Create(char *name, int initialSize)
             delete hdr;
 	    }
         delete freeMap;
+        diskmapLock->Release();
     }
+    directoryLock->Release();
     delete directory;
     return success;
 }
@@ -237,16 +242,18 @@ FileSystem::Create(char *name, int initialSize)
 
 OpenFile *
 FileSystem::Open(char *name)
-{ 
+{
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
     OpenFile *openFile = NULL;
     int sector;
 
     DEBUG('f', "Opening file %s\n", name);
+    directoryLock->Acquire();
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
-	openFile = new(std::nothrow) OpenFile(sector);	// name was found in directory 
+	openFile = new(std::nothrow) OpenFile(sector);	// name was found in directory
+    directoryLock->Release();
     delete directory;
     return openFile;				// return NULL if not found
 }
@@ -274,16 +281,19 @@ FileSystem::Remove(char *name)
     int sector;
     
     DEBUG('r', "starting filesystem remove\n");
+    directoryLock->Acquire();
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
     if (sector == -1) {
        delete directory;
+       directoryLock->Release();
        return false;			 // file not found 
     }
     fileHdr = new(std::nothrow) FileHeader();
     fileHdr->FetchFrom(sector);
 
+    diskmapLock->Acquire();
     freeMap = new(std::nothrow) BitMap(NumSectors);
     freeMap->FetchFrom(freeMapFile);
 
@@ -293,6 +303,8 @@ FileSystem::Remove(char *name)
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(directoryFile);        // flush to disk
+    directoryLock->Release();
+    diskmapLock->Release();
     delete fileHdr;
     delete directory;
     delete freeMap;
@@ -310,9 +322,10 @@ void
 FileSystem::List()
 {
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
-
+    directoryLock->Acquire();
     directory->FetchFrom(directoryFile);
     directory->List();
+    directoryLock->Release();
     delete directory;
 }
 
@@ -335,10 +348,12 @@ FileSystem::Print()
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
 
     printf("Bit map file header:\n");
+    diskmapLock->Acquire();
     bitHdr->FetchFrom(FreeMapSector);
     bitHdr->Print();
 
     printf("Directory file header:\n");
+    directoryLock->Acquire();
     dirHdr->FetchFrom(DirectorySector);
     dirHdr->Print();
 
@@ -347,6 +362,9 @@ FileSystem::Print()
 
     directory->FetchFrom(directoryFile);
     directory->Print();
+
+    directoryLock->Release();
+    diskmapLock->Release();
 
     delete bitHdr;
     delete dirHdr;
