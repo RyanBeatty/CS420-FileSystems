@@ -52,6 +52,7 @@
 #include "directory.h"
 #include "filehdr.h"
 #include "filesys.h"
+#include "system.h"
 #include <new>
 
 // Sectors containing the file headers for the bitmap of free sectors,
@@ -114,6 +115,7 @@ FileSystem::FileSystem(bool format)
     // on it!).
 
         DEBUG('f', "Writing headers back to disk.\n");
+    directoryLock->Acquire();                               // need to do this so an error isn't raised
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
 

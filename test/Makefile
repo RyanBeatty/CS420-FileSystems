@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 exst
+all: halt shell matmult sort fstest1 exst share1 share2 sharekid1 sharekid2
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -76,3 +76,27 @@ exst.o: exst.c
 exst: exst.o start.o
 	$(LD) $(LDFLAGS) start.o exst.o -o exst.coff
 	../bin/coff2noff exst.coff exst
+
+share1.o: share1.c
+	$(CC) $(CFLAGS) -c share1.c
+share1: share1.o start.o
+	$(LD) $(LDFLAGS) start.o share1.o -o share1.coff
+	../bin/coff2noff share1.coff share1
+
+share2.o: share2.c
+	$(CC) $(CFLAGS) -c share2.c
+share2: share2.o start.o
+	$(LD) $(LDFLAGS) start.o share2.o -o share2.coff
+	../bin/coff2noff share2.coff share2
+
+sharekid1.o: sharekid1.c
+	$(CC) $(CFLAGS) -c sharekid1.c
+sharekid1: sharekid1.o start.o
+	$(LD) $(LDFLAGS) start.o sharekid1.o -o sharekid1.coff
+	../bin/coff2noff sharekid1.coff sharekid1
+
+sharekid2.o: sharekid2.c
+	$(CC) $(CFLAGS) -c sharekid2.c
+sharekid2: sharekid2.o start.o
+	$(LD) $(LDFLAGS) start.o sharekid2.o -o sharekid2.coff
+	../bin/coff2noff sharekid2.coff sharekid2

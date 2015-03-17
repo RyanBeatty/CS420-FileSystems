@@ -898,12 +898,16 @@ directory.o: ../filesys/directory.cc /usr/include/stdc-predef.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h ../filesys/filehdr.h ../machine/disk.h \
  ../userprog/bitmap.h ../filesys/openfile.h ../filesys/directory.h \
- ../filesys/openfile.h /usr/include/c++/4.8/new \
+ ../filesys/openfile.h ../threads/synch.h ../threads/thread.h \
+ ../threads/utility.h ../machine/machine.h ../machine/translate.h \
+ ../machine/disk.h ../userprog/addrspace.h ../filesys/filesys.h \
+ /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
+ ../userprog/filetable.h ../userprog/syscall.h ../threads/list.h
 filehdr.o: ../filesys/filehdr.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
  ../threads/utility.h ../machine/sysdep.h /usr/include/stdlib.h \
@@ -961,13 +965,21 @@ filesys.o: ../filesys/filesys.cc /usr/include/stdc-predef.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h ../userprog/bitmap.h ../filesys/openfile.h \
- ../filesys/directory.h ../filesys/openfile.h ../filesys/filehdr.h \
+ ../filesys/directory.h ../filesys/openfile.h ../threads/synch.h \
+ ../threads/thread.h ../threads/utility.h ../machine/machine.h \
+ ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
  ../filesys/filesys.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
+ ../userprog/filetable.h ../userprog/syscall.h ../threads/list.h \
+ ../filesys/filehdr.h ../filesys/filesys.h ../threads/system.h \
+ ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
+ ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
+ ../machine/console.h ../userprog/processlist.h ../threads/synchlist.h \
+ ../threads/synch.h ../userprog/filetable.h ../filesys/synchdisk.h
 fstest.o: ../filesys/fstest.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
  ../machine/sysdep.h /usr/include/stdlib.h /usr/include/features.h \

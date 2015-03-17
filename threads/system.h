@@ -59,6 +59,7 @@ extern FileSystem  *fileSystem;
 #ifdef FILESYS
 #include "synchdisk.h"
 extern SynchDisk   *synchDisk;
+extern Lock *directoryLock;
 #endif
 
 #ifdef NETWORK
