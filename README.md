@@ -1,7 +1,7 @@
 # CS420-FileSystems
 NACHOS File System implementation
 
-----------------My implementation of Arbitrarily long files is as follows--------------------
+----My implementation of Arbitrarily long files is as follows----
 
 ############################################################
 Classes added to implement Single and Double Indirect blocks
@@ -58,8 +58,6 @@ Changes made to FileHeader to implement large files
 
 * The "dataSectors" array now holds sector locations on the disk of allocated DoublyIndirectBlock objets.
 
-* Allocate() can now be used to allocate more space for a file at any point during the FileHeader object's lifetime (previously it could only be used when first allocating a FileHeader object).
-
 * Allocate() now iterates over the "dataSectors" array and allocates DoublyIndirectBlock objects on the disk instead of direct blocks in order to allow arbitrarily long files to be stored on disk. When allocating a new DoublyIndirectBlock, simply create a new DoublyIndirectBlock object and then call the object's Allocate() method passing in the number of sectors that need to be allocated.
 
 * Deallocate() now deallocates all of the DoublyIndirectBlock objects that have been allocated by the FileHeader object. When iterating over the "dataSectors" array, fetch the allocated DoublyIndirectBlock objects that have been allocated from the disk and then simply call the object's Deallocate() method.
@@ -67,7 +65,63 @@ Changes made to FileHeader to implement large files
 * ByteToSector() now calculates which DoublyIndirectBlock contains the sector where the offset is stored, loads up the corresponding DoublyIndirectBlock object from the disk, and then calls ByteToSector() on the DoublyIndirectBlock object to get the corresponding sector where the offset is stored on disk.
 
 
-#################################################
+
+----My implementation of extendable files is as follows----
+
+########################################################
+Changes made to FileHeader to implement extendable files
+########################################################
+
+* Allocate() can now be used to allocate more space for a file at any point during the FileHeader object's lifetime (previously it could only be used when first allocating a FileHeader object). Allocate iterates over the "dataSectors" array and keeps allocating space until, the allocation request has been served fully. The DoublyIndirectBlock class's Allocate() method returns the amount of sectors allocated, so it is easy for the FileHeader to keep track of how much space still needs to be allocated for the request.
+
+* Allocate() also adds the number of requested bytes and sectors to be allocated to the "numSectors" and "numBytes"
+
+
+######################################################
+Changes made to OpenFile to implement extendable files
+######################################################
+
+in openfile.h
+
+* Added new private integer variable "hdrSector" which keeps track of the sector on the disk where the FileHeader object is stored.
+
+
+in openfile.cc
+
+* The OpenFile() constructor now sets "hdrSector" to be the passed in sector argument to the constructor
+
+* Write() now checks to see if we are writing off the end of the file and resizes the file. First check if the current seek position plus the number of bytes we wish to write to the file is greater than the file lenght in bytes. If it is, resize the file, else we just service the write.
+
+* When resizing files, first create a new BitMap and fetch the disk bitmap from disk. Then allocate enough space to service the write request by calling Allocate() on the OpenFile's "hdr" FileHeader object. Then write "hdr" and the modified disk bitmap back to disk.
+
+
+################################################################
+Changes made to Directory to implement extendable directory size
+################################################################
+
+in directory.h
+
+* Added a new method, Expand(), for expanding the directory
+
+* "INCREASE_FACTOR": macro which specifies the factor by which the directory object should grow when expanding. Currently set so that the directory will double in size for each Expand().
+
+in directory.cc
+
+* void Expand(int): new method that takes in the new directory size as a parameter. It creates a new DirectoryEntry array and copies over all of the entries in the current "table" array and then assigns "table" to point to the new table and "tableSize" to be the passed in size.
+
+* Add() now checks if the directory needs to be resized. If when iterating over the "table" array, there is no more space, resize the table and pick the first open slot to store the new DirectoryEntry at.
+
+* Fetching/Writing the Directory object to/from disk. Since the Directory no longer has once static, set size, the size of the table needs to be written to disk in order to be able to be able to recreate the Directory object when fetching it from the disk. Also, since FetchFrom/WriteBack used ReadAt/WriteAt, I had to change them to use OpenFile::Read() and OpenFile::Write() so that the Directory file can expand when the directory object expands.
+
+* WriteBack() now writes the "tableSize" to disk along with the "table" array. First call Seek(0) on the passed in OpenFile object just to make sure we are going to write data starting at the beginning of the directory file. Then write the "tableSize" variable to the directory file (basically I cast the address returned by &tableSize to a (char *) and then write sizeof(int) bytes). Then write the table to the directory file, making sure to write "tableSize" * sizeof(DirectoryEntry) bytes. Finally, move the seekposition back to the start of the directory file by calling Seek(0) on the OpenFile object.
+
+* FetchFrom() now takes into acount directory expansion. First call Seek(0) on the passed in directory OpenFile object in order to make sure we will be reading data from the beginning of the directory file. Then read the "tableSize" value from the file and store it in an integer (basically read sizeof(int) bytes of data from the file). If the size read is greater than the size the Directory object was initialized with, call Expand() and pass in the new size. Then read the "table" array from the file by reading "tableSize" * sizeof(DirectoryEntry) bytes from the file. Finally, move the seekposition back to the start of the directory file by calling Seek(0) on the OpenFile object.
+
+
+----My implementation of synchronized file system is as follows----
+
+
+
 
 
 
