@@ -118,7 +118,33 @@ in directory.cc
 * FetchFrom() now takes into acount directory expansion. First call Seek(0) on the passed in directory OpenFile object in order to make sure we will be reading data from the beginning of the directory file. Then read the "tableSize" value from the file and store it in an integer (basically read sizeof(int) bytes of data from the file). If the size read is greater than the size the Directory object was initialized with, call Expand() and pass in the new size. Then read the "table" array from the file by reading "tableSize" * sizeof(DirectoryEntry) bytes from the file. Finally, move the seekposition back to the start of the directory file by calling Seek(0) on the OpenFile object.
 
 
+########################################################
+Changes made to FileSystem to implement extendable files
+########################################################
+
+* moved the OpenFile objects "directoryFile" and "freeMapFile" out of the FileSystem class and made them global variables. The reason for this is that when I call WriteBack() on the Directory object in the constructor, the Directory fileheader needs to expand (this is because of changes made in the way the Directory object is written back to the disk explained above. The Directory object won't fit on one disk sector initially, so it needs to expand when first creating it). My code for expanding involves access to "diretoryFile" and "freeMapFile"; however, since they previously could only be accessed through the global "fileSystem" object, I was getting segmentation faults because the FileSystem() constructor had not finished and the "fileSystem" object was not fully initialized. Therefore, I moved "directoryFile" and "freeMapFile" out of the FileSystem class.  
+
+
 ----My implementation of synchronized file system is as follows----
+
+####################################################
+Changes made to implement concurrent file read/write
+####################################################
+
+***NOTE*** the following change is from my original NACHOS 2 from Operating Systems
+
+* Added global Lock object "ioLock" that only allows one process to perform an I/O action (such as reading/writing to/from a file or the console) at a time. Processes wait to acquire this lock in the read or write and then release the lock after the operation has been completed, allowing for concurrent reading/writing accross multiple processes. I realize this is most definitely an inefficient way of doing I/O, but I did not change it for fear of breaking my exception.cc and sytem call code from Operating Systems that I remember very little about how it works.
+
+
+#####################################################################
+Changes made to FileSystem to implement atomic file system operations
+#####################################################################
+
+in system.h/.cc
+
+* added system wide Lock objects called "directoryLock" and "diskmapLock" which provide mutual exclusion when accessing the Directory object or the diskmap.
+
+in filesys.cc
 
 
 
