@@ -146,7 +146,7 @@ in system.h/.cc
 
 in filesys.cc
 
-
+ * All file system operations (Create, Open, Remove, List, Print) now use the "directoryLock" and "diskmapLock" Lock objects to synchronize access to the Directory or diskmap objects. Whenever a process needs to access or modify the Directory or diskmap in one of the file system operations, they must first wait to acquire the right locks and then release them when they are finished. NOTE: this means that my file system is synchronized from a User Land perspective; the kernel, however, is not fully synchronized within itself. I might need to make changes to support further file system functionality such as VM.
 
 
 
