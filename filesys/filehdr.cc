@@ -117,29 +117,6 @@ FileHeader::Deallocate(BitMap *freeMap)
     DEBUG('r', "finished filehdr deallocation\n");
 }
 
-// bool
-// FileHeader::Expand(BitMap *freeMap, int sizeBytes) {
-//     DEBUG('e', "starting fileheader expand\n");
-//     if(sizeBytes < 0)
-//         return false;
-//     int remSectors  = divRoundUp(sizeBytes, SectorSize);
-//     if(freeMap->NumClear() < remSectors)
-//         return false;
-
-//     DEBUG('e', "enough space for fileheader expand\n");
-//     // DoublyIndirectBlock *dblock;
-//     // for(int i = 0; i < NumDirect && remSectors > 0; ++i) {
-//     //     if(dataSectors[i] == EMPTY_BLOCK)
-//     //         dataSectors[i] = freeMap->Find();
-//     //     ASSERT(dataSectors[i] != EMPTY_BLOCK);
-//     //     dblock = new(std::nothrow) DoublyIndirectBlock();
-//     //     dblock->Allocate(freeMap, remSectors);
-//     }
-
-//     DEBUG('e', "finished fileheader expand\n");
-//     return true;
-// }
-
 //----------------------------------------------------------------------
 // FileHeader::FetchFrom
 // 	Fetch contents of file header from disk. 
