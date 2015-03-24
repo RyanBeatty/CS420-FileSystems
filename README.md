@@ -64,6 +64,11 @@ Changes made to FileHeader to implement large files
 
 * Deallocate() now deallocates all of the DoublyIndirectBlock objects that have been allocated by the FileHeader object. When iterating over the "dataSectors" array, fetch the allocated DoublyIndirectBlock objects that have been allocated from the disk and then simply call the object's Deallocate() method.
 
+* ByteToSector() now calculates which DoublyIndirectBlock contains the sector where the offset is stored, loads up the corresponding DoublyIndirectBlock object from the disk, and then calls ByteToSector() on the DoublyIndirectBlock object to get the corresponding sector where the offset is stored on disk.
+
+
+#################################################
+
 
 
 

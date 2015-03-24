@@ -160,7 +160,6 @@ FileHeader::ByteToSector(int offset)
     DoublyIndirectBlock *dblock = new(std::nothrow) DoublyIndirectBlock();
     dblock->FetchFrom(dataSectors[vBlock / (MAX_BLOCKS * MAX_BLOCKS)]);
     int pBlock = dblock->ByteToSector(offset);
-    // printf("filehdr ByteToSector: %d\n", pBlock);
     ASSERT(pBlock >= 0 && pBlock < NumSectors);
     delete dblock;
     return pBlock;
