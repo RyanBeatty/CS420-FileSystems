@@ -307,6 +307,7 @@ FileSystem::Remove(char *name)
     delete directory;
     delete freeMap;
 
+    printf("finished removing file\n");
     DEBUG('r', "finished removing file\n");
     return true;
 } 

@@ -171,14 +171,15 @@ Large File Size Testing
 All of the text files in /filesys/test/ can be along with fstest.cc to test that my file system can handle arbitrarily long files.
 
 files to cp over:
-/filesys/test/toobig
-/filesys/test/toobig2
-/filesys/test/toobig3
-/filesys/test/diskbig
+/filesys/test/toobig        // about 4,000 bytes
+/filesys/test/toobig2		// about 8,000 bytes
+/filesys/test/toobig3		// about 15,000 bytes
+/filesys/test/diskbig		// about 128,000 bytes
 
-run:
+to run:
 ./nachos -f -cp test/[filename] [filename] // to format the disk
 ./nachos -cp test/[filename] [filename] // to copy over any file
+./nachos -p [filename]					// to print nachos file
 
 
 ############
@@ -241,6 +242,36 @@ PARENT read 1 bytes
 Data from the read was: <u>
 PARENT read from closed file returned -1
 
+##########
+atmfile.c
+atmfileB.c
+atmfileC.c
+atmfileD.c
+##########
+
+Tests to make sure that writes to a file are concurrent. atmfile begins by creating and opening a file called "sharefile". It Then execs three children (atmfileB, atmfileC, atmfileD) which print out either "BBBBB", "CCCCC", or "DDDDD" in a loop with a delay for a certain number of iterations and then exits. After execing the children, atmfile prints "AAAAA" in a loop with a delay for a certain number of iterations before joining the children. In "sharefile", every string of 5 characters should be the same character (either 'A', 'B', 'C', or 'D').
+
+files to cp over:
+/test/atmfile
+/test/atmfileB
+/test/atmfileC
+/test/atmfileD
+
+to run:
+./nachos -x atmfile
+./nachos -p sharefile // to check output
+****Output****
+Parent opened sharefile on fd 2
+Parent execing kidB
+Parent execing kidC
+Parent execing kidD
+Child B joined with value: 0
+Child C joined with value: 0
+Child D joined with value: 0
+
+****Output from sharefile****
+BBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDAAAAABBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDDBBBBBCCCCCDDDDD
+
 #######################
 Extendible File Testing
 cp.c
@@ -255,5 +286,3 @@ to run:
 ./nachos -f -cp test/toobig2 in.txt // format the disk and copy over a large file but not large enough where 2 copies of it will overflow the disk
 ./nachos -x cp
 ./nachos -p res.txt 				// display the contents of the output file. should be equal to the input file
-****Output****
-finished copy

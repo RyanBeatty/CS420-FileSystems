@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2
+all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -100,3 +100,27 @@ sharekid2.o: sharekid2.c
 sharekid2: sharekid2.o start.o
 	$(LD) $(LDFLAGS) start.o sharekid2.o -o sharekid2.coff
 	../bin/coff2noff sharekid2.coff sharekid2
+
+atmfile.o: atmfile.c
+	$(CC) $(CFLAGS) -c atmfile.c
+atmfile: atmfile.o start.o
+	$(LD) $(LDFLAGS) start.o atmfile.o -o atmfile.coff
+	../bin/coff2noff atmfile.coff atmfile
+
+atmfileB.o: atmfileB.c
+	$(CC) $(CFLAGS) -c atmfileB.c
+atmfileB: atmfileB.o start.o
+	$(LD) $(LDFLAGS) start.o atmfileB.o -o atmfileB.coff
+	../bin/coff2noff atmfileB.coff atmfileB
+
+atmfileC.o: atmfileC.c
+	$(CC) $(CFLAGS) -c atmfileC.c
+atmfileC: atmfileC.o start.o
+	$(LD) $(LDFLAGS) start.o atmfileC.o -o atmfileC.coff
+	../bin/coff2noff atmfileC.coff atmfileC
+
+atmfileD.o: atmfileD.c
+	$(CC) $(CFLAGS) -c atmfileD.c
+atmfileD: atmfileD.o start.o
+	$(LD) $(LDFLAGS) start.o atmfileD.o -o atmfileD.coff
+	../bin/coff2noff atmfileD.coff atmfileD
