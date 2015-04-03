@@ -146,11 +146,14 @@ in system.h/.cc
 
 in filesys.cc
 
- * All file system operations (Create, Open, Remove, List, Print) now use the "directoryLock" and "diskmapLock" Lock objects to synchronize access to the Directory or diskmap objects. Whenever a process needs to access or modify the Directory or diskmap in one of the file system operations, they must first wait to acquire the right locks and then release them when they are finished. NOTE: this means that my file system is synchronized from a User Land perspective; the kernel, however, is not fully synchronized within itself. I might need to make changes to support further file system functionality such as VM.
+* All file system operations (Create, Open, Remove, List, Print) now use the "directoryLock" and "diskmapLock" Lock objects to synchronize access to the Directory or diskmap objects. Whenever a process needs to access or modify the Directory or diskmap in one of the file system operations, they must first wait to acquire the right locks and then release them when they are finished. NOTE: this means that my file system is synchronized from a User Land perspective; the kernel, however, is not fully synchronized within itself. I might need to make changes to support further file system functionality such as VM.
 
 
+###########################################################################
+Changes made to FileSystem to implement persistent openfiles after deletion
+###########################################################################
 
-
+* This does not work in my File System, and I did not have enough time to fix it.....
 
 
 
@@ -158,6 +161,24 @@ in filesys.cc
 
 
 ------------------------TESTING-----------------------------------------
+NOTE: when copying files over to the DISK to run tests, I will assume (unless stated otherwise) that the copied over files will have the retain the same filename on the DISK. For example, if I specify to copy over /test/data its filename should be "data" on the NACHOS file system.
+
+
+#######################
+Large File Size Testing
+#######################
+
+All of the text files in /filesys/test/ can be along with fstest.cc to test that my file system can handle arbitrarily long files.
+
+files to cp over:
+/filesys/test/toobig
+/filesys/test/toobig2
+/filesys/test/toobig3
+/filesys/test/diskbig
+
+run:
+./nachos -f -cp test/[filename] [filename] // to format the disk
+./nachos -cp test/[filename] [filename] // to copy over any file
 
 
 ############
@@ -219,3 +240,20 @@ PARENT about to read a byte from shared file
 PARENT read 1 bytes
 Data from the read was: <u>
 PARENT read from closed file returned -1
+
+#######################
+Extendible File Testing
+cp.c
+#######################
+
+cp.c tests that a file can dynamically expand when writing to it by copying the contets of one file to another. It begins by creating an output file called "res.txt" that is of size zero. It then opens an input file called "in.txt" and opens the output file as well. It then begins to read the input file in blocks of 100 bytes and write whatever was read to the output file. Finally it closes both files.
+
+files to cp over:
+/test/cp
+
+to run:
+./nachos -f -cp test/toobig2 in.txt // format the disk and copy over a large file but not large enough where 2 copies of it will overflow the disk
+./nachos -x cp
+./nachos -p res.txt 				// display the contents of the output file. should be equal to the input file
+****Output****
+finished copy

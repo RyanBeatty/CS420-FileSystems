@@ -196,8 +196,6 @@ FileSystem::Create(char *name, int initialSize)
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
 
-    printf("got disk\n");
-
     if (directory->Find(name) != -1)
       success = false;			// file is already in directory
     else {

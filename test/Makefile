@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 exst share1 share2 sharekid1 sharekid2
+all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -71,11 +71,11 @@ fstest1: fstest1.o start.o
 	$(LD) $(LDFLAGS) start.o fstest1.o -o fstest1.coff
 	../bin/coff2noff fstest1.coff fstest1
 
-exst.o: exst.c
-	$(CC) $(CFLAGS) -c exst.c
-exst: exst.o start.o
-	$(LD) $(LDFLAGS) start.o exst.o -o exst.coff
-	../bin/coff2noff exst.coff exst
+cp.o: cp.c
+	$(CC) $(CFLAGS) -c cp.c
+cp: cp.o start.o
+	$(LD) $(LDFLAGS) start.o cp.o -o cp.coff
+	../bin/coff2noff cp.coff cp
 
 share1.o: share1.c
 	$(CC) $(CFLAGS) -c share1.c
