@@ -36,7 +36,7 @@ Lock *diskLock;
 OpenFile *vmFile;
 
 BitMap *diskMap;         // bitmap for allocating disk sectors
-SynchDisk *vmDisk;   // our disk for secondary storage
+// SynchDisk *vmDisk;   // our disk for secondary storage
 AddrSpace *reversePageTable[NumPhysPages];
 Lock *memLock;
 #endif
@@ -195,7 +195,7 @@ Initialize(int argc, char **argv)
     vmFile = NULL;
 
     diskMap = new(std::nothrow) BitMap(NumSectors);
-    vmDisk = new(std::nothrow) SynchDisk("VM DISK");
+    // vmDisk = new(std::nothrow) SynchDisk("VM DISK");
     memLock = new(std::nothrow) Lock("memLock");
 
     for(int i = 0; i < NumPhysPages; ++i)

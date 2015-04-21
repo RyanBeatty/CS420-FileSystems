@@ -577,11 +577,13 @@ HandleTLBFault(int vaddr)
             }
 
             int sector = reversePageTable[victimPhysicalPage]->sectorMap[victimVirtualPage];
-            vmDisk->WriteSector(sector, &machine->mainMemory[victimPhysicalPage * PageSize]);
+            // vmDisk->WriteSector(sector, &machine->mainMemory[victimPhysicalPage * PageSize]);
+            vmFile->WriteAt(&machine->mainMemory[victimPhysicalPage * PageSize], SectorSize, sector * SectorSize);
             reversePageTable[victimPhysicalPage]->pageMap[victimVirtualPage] = -1;
         }
 
-        vmDisk->ReadSector(currentThread->space->sectorMap[vpn], &machine->mainMemory[victimPhysicalPage * PageSize]);
+        // vmDisk->ReadSector(currentThread->space->sectorMap[vpn], &machine->mainMemory[victimPhysicalPage * PageSize]);
+        vmFile->ReadAt(&machine->mainMemory[victimPhysicalPage * PageSize], SectorSize, currentThread->space->sectorMap[vpn] * SectorSize);
         currentThread->space->pageMap[vpn] = victimPhysicalPage;            // update mapping of our virtual page we loaded in
         reversePageTable[victimPhysicalPage] = currentThread->space; 
     }

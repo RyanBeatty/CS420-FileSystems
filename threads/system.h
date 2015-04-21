@@ -66,7 +66,7 @@ extern Lock *diskLock;
 extern OpenFile *vmFile;
 
 extern BitMap *diskMap;			// bitmap for allocating disk sectors
-extern SynchDisk *vmDisk;	// our disk for secondary storage
+// extern SynchDisk *vmDisk;	// our disk for secondary storage
 extern AddrSpace *reversePageTable[];
 extern Lock *memLock;
 

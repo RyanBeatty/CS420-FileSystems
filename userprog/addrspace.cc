@@ -131,7 +131,8 @@ AddrSpace::AddrSpace(OpenFile *executable, bool chckpnt) {
         }
 
         sectorMap[i] = nextFreeSector;                      // save mapping of virtual page to disk sectors
-        vmDisk->WriteSector(nextFreeSector, &page[i*PageSize]);      // write virtual page i to disk
+        // vmDisk->WriteSector(nextFreeSector, &page[i*PageSize]);      // write virtual page i to disk
+        vmFile->WriteAt(&page[i*PageSize], SectorSize, nextFreeSector * SectorSize);
     }
 
     delete [] page;
@@ -370,7 +371,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
         }
 
         sectorMap[i] = nextFreeSector;                      // save mapping of virtual page to disk sectors
-        vmDisk->WriteSector(nextFreeSector, &page[i*PageSize]);      // write virtual page i to disk
+        // vmDisk->WriteSector(nextFreeSector, &page[i*PageSize]);      // write virtual page i to disk
+        vmFile->WriteAt(&page[i*PageSize], SectorSize, nextFreeSector * SectorSize);
         memLock->Release();
     }
 
