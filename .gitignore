@@ -27,4 +27,4 @@
 *.out
 *.app
 
-*.coff
+test/*.coff
