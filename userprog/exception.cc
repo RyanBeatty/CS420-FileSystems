@@ -33,6 +33,10 @@
 
 #define MAX_STRING_LENGTH 128           // max length of a user-land string including null character
 
+#define CHECKPOINT_TAG "#CHECKPOINT#"
+
+int find_virtual_page(int physicalPage);
+
 //----------------------------------------------------------------------
 // LoadStringFromMemory()
 //
@@ -43,9 +47,12 @@
 char *
 LoadStringFromMemory(int vAddr) {
 
+    // printf("start load\n");
     bool terminated = false;
     char *buffer = new(std::nothrow) char[MAX_STRING_LENGTH];
     
+    memLock->Acquire();
+    // printf("ld str acquire\n");
     for(int i = 0; i < MAX_STRING_LENGTH; ++i) {                   // iterate until max string length
         int pAddr = currentThread->space->V2P(vAddr + i);
         if((buffer[i] = machine->mainMemory[pAddr]) == '\0') {      // break if string ended
@@ -53,6 +60,9 @@ LoadStringFromMemory(int vAddr) {
           break;
         }
     }
+
+    memLock->Release();
+    // printf("end load\n");
 
     if(!terminated) {                         // if the string is longer than the max string length, return NULL
         delete [] buffer;
@@ -73,10 +83,14 @@ LoadStringFromMemory(int vAddr) {
 //----------------------------------------------------------------------
 void
 SaveStringToMemory(char* buffer, int numRead, int vAddr) {
+    // printf("start read\n");
+    memLock->Acquire();
     for(int i = 0; i < numRead; ++i) {                   // iterate over the amount of bytes read
         int pAddr = currentThread->space->V2P(vAddr + i);
         machine->mainMemory[pAddr] = buffer[i];     // copy buffer from kernel-land back to user-land
     }
+    // printf("end read\n");
+    memLock->Release();
 
     return ;
 }
@@ -92,6 +106,14 @@ SaveStringToMemory(char* buffer, int numRead, int vAddr) {
 void StartProcess(int args) {
     char **argStrings = (char **) args;
 
+    if(currentThread->space->is_checkpoint) {
+        currentThread->space->restore_registers();
+        // printf("machine run\n");
+        currentThread->space->RestoreState();      // load page table register
+        machine->Run();
+    }
+    
+
     currentThread->space->InitRegisters();     // set the initial register values
     currentThread->space->RestoreState();      // load page table register
 
@@ -105,6 +127,8 @@ void StartProcess(int args) {
 
         int argvAddr[argc];                                 // create an arrray to hold the adddresses of the arguments
 
+        memLock->Acquire();
+        // printf("startprocess acquire\n");
         for(int i = 0; argStrings[i] != 0; ++i) {               // for each argument, copy it over to the stack
             int len = strlen(argStrings[i]) + 1;                // calc str len of the argument
             sp -= len;                                          // move the stack pointer by that amount
@@ -122,6 +146,8 @@ void StartProcess(int args) {
 
         for(int i = 0; i < argc; ++i)
             *(unsigned int *) &machine->mainMemory[currentThread->space->V2P(sp + i*4)] = WordToMachine((unsigned int) argvAddr[i]);
+        // printf("startprocess release\n");
+        memLock->Release();
     }
 
     machine->WriteRegister(4, argc);                // store argc for return
@@ -198,6 +224,7 @@ SC_CLOSE(){
 //----------------------------------------------------------------------
 void 
 SC_WRITE() {
+    // printf("start write\n");
     char *buffer = LoadStringFromMemory(machine->ReadRegister(4));     // grab buffer argument from register    
     if(buffer == NULL)     // error bad input
         return ;
@@ -228,6 +255,7 @@ SC_WRITE() {
         ioLock->Release();
     }
 
+    // printf("end write\n");
     delete [] buffer;
     return ;
 }
@@ -289,19 +317,36 @@ SpaceId SC_EXEC(){
 
     OpenFile *executable = fileSystem->Open(filename);  // create new open file object for the executable
     if(executable == NULL) {                            // could not open file
-        // printf("Unable to open file: %s\n", filename);
+        // printf("\nUnable to open file: %s\n", filename);
+        fflush(stdout);
         delete[] filename;
         return -1;
     }
 
+    bool is_checkpoint = false;
+
+    char buffer[13];
+    memset(buffer, '\0', sizeof(buffer));
+    executable->Read(buffer, 12);
+
+    if(!strcmp(buffer, CHECKPOINT_TAG)) 
+        is_checkpoint = true;
+
+
     char **argStrings;                  // will have arguments loaded into
-    if(argVectorBase == 0)              // NULL passed in for argv
+    if(argVectorBase == 0 || is_checkpoint)              // NULL passed in for argv
         argStrings = NULL;
     else {
+        // memLock->Acquire();
+        // printf("exec acquire\n");
         argStrings = new(std::nothrow) char*[11];                              // can only pass 11 argument
         for(int i = 0; i < 11; ++i) {                                           // iterate and load all argument strings into our char * array
+            
+            memLock->Acquire();
             int addr = currentThread->space->V2P(argVectorBase + (i * 4));       // get physical address of the virtual address of the start of the next argument string
             unsigned int vAddr = *(unsigned int *) &machine->mainMemory[addr];    // get virtual address of the start of the next argument string
+            memLock->Release();
+
             if(vAddr == 0) {                  // no more arguments
                 argStrings[i] = (char *) NULL;      // add terminating null pointer
                 break;
@@ -309,11 +354,14 @@ SpaceId SC_EXEC(){
 
             argStrings[i] = LoadStringFromMemory(vAddr);                // load the corresponding argument string from memory
         }
+        // printf("exec release\n");
+        // memLock->Release();
     }
 
 
-    AddrSpace *new_space = new(std::nothrow) AddrSpace(executable);         // build new address space for child process
+    AddrSpace *new_space = new(std::nothrow) AddrSpace(executable, is_checkpoint);         // build new address space for child process
     if(!new_space->GetSuccess()) {                                                 // child binary too big for memory, do not let run
+        // printf("addrspace failed\n");
         delete[] filename;
         delete executable;
         delete new_space;
@@ -321,7 +369,7 @@ SpaceId SC_EXEC(){
     }
 
     FileVector *newVector;                          // create new FileVector for the child process
-    if(shareflag == 0)                      
+    if(shareflag == 0 || is_checkpoint)                      
         newVector = new(std::nothrow) FileVector();         // if we are not sharing files, create a blank file vector
     else
         newVector = new(std::nothrow) FileVector(currentThread->space->fileVector);     // else inherit File Vector from parent
@@ -336,7 +384,7 @@ SpaceId SC_EXEC(){
 
     new_process->Fork(StartProcess, (int) argStrings);                       // fork off new process
 
-    delete[] filename;        // no leaks
+    // delete[] filename;        // no leaks
     delete executable;
 
     return newProcessId;   //temp spaceID
@@ -361,11 +409,126 @@ int SC_JOIN(){
 //----------------------------------------------------------------------
 void
 SC_EXIT() {
+    // printf("start exit\n");
     int exitStatus = machine->ReadRegister(4);              // grab the exit status
     SpaceId currentProcessId = currentThread->space->GetId();     //grab the id of the current process
-    processList->SetStatus(currentProcessId,exitStatus);    //signal any waiting processes 
+    processList->SetStatus(currentProcessId,exitStatus);    //signal any waiting processes
+
+    memLock->Acquire();
+    for(unsigned int i = 0; i < NumPhysPages; ++i) {
+        if(reversePageTable[i] == currentThread->space) {
+            reversePageTable[i] = NULL;
+            break;
+        }
+    }
+
+    // for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i)
+    //     diskMap->Clear(currentThread->space->sectorMap[i]);
+    memLock->Release();
+
+    // for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i)
+    //     diskMap->Clear(currentThread->space->sectorMap[i]);
+
+    // printf("end exit\n");
+
     delete currentThread->space->fileVector;                //closing the file vector by deleting it
     return ;
+}
+
+int
+SC_CHECKPOINT() {
+    char *filename = LoadStringFromMemory(machine->ReadRegister(4));
+    if(filename == NULL)                                // could not load string from memory
+        return -1;
+
+    fileSystem->Remove(filename);       // remove previous checkpoint file if it exists
+
+    fileSystem->Create(filename, 0);
+    OpenFile *f = fileSystem->Open(filename);
+
+    f->Write(CHECKPOINT_TAG, 12);           // write checkpoint tag and newline to file
+    f->Write("\n", 1);
+
+    char regBuffer[30];
+    for(int i = 0; i < NumTotalRegs; ++i) {                 // write registers to file
+        memset(regBuffer, '\0', sizeof(regBuffer));
+
+        int data = machine->ReadRegister(i);
+        sprintf(regBuffer, "%d", data);
+        f->Write(regBuffer, strlen(regBuffer));
+        f->Write("\n", 1);
+        // printf("write reg %d: %d\n", i, data);
+    }
+
+    memLock->Acquire();
+
+    char buffer[30];                                    
+    memset(buffer, '\0', sizeof(buffer));
+    sprintf(buffer, "%d", currentThread->space->GetNumPages());
+    f->Write(buffer, strlen(buffer));                                // write number of pages for process to file
+    f->Write("\n", 1);
+
+    // printf("numpage: %d\n", currentThread->space->GetNumPages());
+
+    for(unsigned int i = 0; i < NumPhysPages; ++i) {                // save all pages in ram to disk
+
+        int virtualPage = find_virtual_page(i);
+
+        if(virtualPage == -1)
+            continue;
+
+        int sector = reversePageTable[i]->sectorMap[virtualPage];
+        synchDisk->WriteSector(sector, &machine->mainMemory[i * PageSize]);
+    }
+
+    char pageBuffer[SectorSize];
+    for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i) {                   // write all sectors to file
+        memset(pageBuffer, '\0', SectorSize);
+        synchDisk->ReadSector(currentThread->space->sectorMap[i], pageBuffer);
+        f->Write(pageBuffer, SectorSize);
+    }
+
+    // char buffer[30];                                    
+    // memset(buffer, '\0', sizeof(buffer));
+    // sprintf(buffer, "%d", currentThread->space->GetNumPages());
+    // f->Write(buffer, strlen(buffer));                                // write number of pages for process to file
+    // f->Write("\n", 1);
+    // printf("start numpages: %d\n", currentThread->space->GetNumPages());
+
+    // for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i) {     // write sector map to file
+    //     memset(buffer, '\0', sizeof(buffer));
+    //     sprintf(buffer, "%d", currentThread->space->sectorMap[i]);
+    //     f->Write(buffer, sizeof(buffer));
+    //     f->Write("\n", 1);
+    // }
+
+    memLock->Release();
+
+    delete f;
+    return 0;
+}
+
+
+int 
+find_virtual_page(int physicalPage) {
+    // for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i) {         // find the virtual page which corresponds to our physical page victim
+    //     if(currentThread->space->pageMap[i] == physicalPage)                 // found virtual page for physical page victim
+    //         return i;
+    // }
+
+    // return -1;
+    ASSERT(physicalPage >= 0 && physicalPage < NumPhysPages);
+    if(reversePageTable[physicalPage] == NULL)
+        return -1;
+
+    unsigned int length = reversePageTable[physicalPage]->GetNumPages();
+    int *pageMap = reversePageTable[physicalPage]->pageMap;
+    for(unsigned int i = 0; i < length; ++i) {         // find the virtual page which corresponds to our physical page victim
+        if(pageMap[i] == physicalPage)                 // found virtual page for physical page victim
+            return i;
+    }
+
+    return -1;
 }
 
 
@@ -387,33 +550,51 @@ SC_EXIT() {
 void
 HandleTLBFault(int vaddr)
 {
-  int vpn = vaddr / PageSize;
-  int victim = Random() % TLBSize;
-  int i;
+    // printf("tlb fault\n");
+    stats->numTLBFaults++;
 
-  stats->numTLBFaults++;
-
-  if(vpn > currentThread->space->GetNumPages() - 1) {            // if bad virtual address, force exit of process
-    machine->WriteRegister(2, 1);                                // setup Exit() system call
-    machine->WriteRegister(4, 1);                                // exit with value 1
-    ExceptionHandler(SyscallException);                          // call Exit() handler
-  }
-
-  // First, see if free TLB slot
-  for (i=0; i<TLBSize; i++)
-    if (machine->tlb[i].valid == false) {
-      victim = i;
-      break;
+    int vpn = vaddr / PageSize;
+    if(vpn > (int) currentThread->space->GetNumPages() - 1) {            // if bad virtual address, force exit of process
+        printf("bad virtual address\n");
+        machine->WriteRegister(2, 1);                                // setup Exit() system call
+        machine->WriteRegister(4, 1);                                // exit with value 1
+        ExceptionHandler(SyscallException);                          // call Exit() handler
     }
 
-  // Otherwise clobber random slot in TLB
+    memLock->Acquire();
+    if(currentThread->space->pageMap[vpn] == -1) {          // if page we are faulting for is on disk, load it into main memory
+        stats->numPageFaults++;
 
-  machine->tlb[victim].virtualPage = vpn;
-  machine->tlb[victim].physicalPage = currentThread->space->GetPageMap()[vpn]; // use page map to resolve vpn to physpagenum
-  machine->tlb[victim].valid = true;
-  machine->tlb[victim].dirty = false;
-  machine->tlb[victim].use = false;
-  machine->tlb[victim].readOnly = false;
+        int victimPhysicalPage = Random() % NumPhysPages;  //replace w/alg like CLOCK
+        int victimVirtualPage = find_virtual_page(victimPhysicalPage);
+
+        if(victimVirtualPage != -1) {
+            for(int i = 0; i < TLBSize; ++i) {                                              // check if new victim is in tlb
+                if(machine->tlb[i].valid && machine->tlb[i].virtualPage == victimVirtualPage) {         // new victim is in tlb
+                    machine->tlb[i].valid = false;                  // invalidate tlb entry
+                    break;
+                }
+            }
+
+            int sector = reversePageTable[victimPhysicalPage]->sectorMap[victimVirtualPage];
+            vmDisk->WriteSector(sector, &machine->mainMemory[victimPhysicalPage * PageSize]);
+            reversePageTable[victimPhysicalPage]->pageMap[victimVirtualPage] = -1;
+        }
+
+        vmDisk->ReadSector(currentThread->space->sectorMap[vpn], &machine->mainMemory[victimPhysicalPage * PageSize]);
+        currentThread->space->pageMap[vpn] = victimPhysicalPage;            // update mapping of our virtual page we loaded in
+        reversePageTable[victimPhysicalPage] = currentThread->space; 
+    }
+
+    int victim = Random() % TLBSize;
+    machine->tlb[victim].virtualPage = vpn;
+    machine->tlb[victim].physicalPage = currentThread->space->pageMap[vpn]; // use page map to resolve vpn to physpagenum
+    machine->tlb[victim].valid = true;
+    machine->tlb[victim].dirty = false;
+    machine->tlb[victim].use = false;
+    machine->tlb[victim].readOnly = false;
+    memLock->Release();
+    // printf("end tlb fault\n");
 }
 
 #endif
@@ -495,6 +676,14 @@ ExceptionHandler(ExceptionType which)
                     SC_CLOSE();
                     machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));        // increment pc to next intruction
                     return;
+                // case SC_CheckPoint: {
+                //     int result = SC_CHECKPOINT();
+                //     machine->WriteRegister(2, result);
+                //     // printf("pc reg: %d\n", machine->ReadRegister(PCReg));
+                //     machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+                //     // printf("pc reg: %d\n", machine->ReadRegister(PCReg));
+                //     return ;
+                // }
                 // case SC_Fork:
                 //     break;
                 // case SC_Yield:
