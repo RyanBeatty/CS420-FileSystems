@@ -58,11 +58,18 @@ extern FileSystem  *fileSystem;
 
 #ifdef FILESYS
 #include "synchdisk.h"
+#include "bitmap.h"
 extern SynchDisk   *synchDisk;
 extern Lock *directoryLock;
 extern Lock *diskmapLock;
 extern Lock *diskLock;
 extern OpenFile *vmFile;
+
+extern BitMap *diskMap;			// bitmap for allocating disk sectors
+extern SynchDisk *vmDisk;	// our disk for secondary storage
+extern AddrSpace *reversePageTable[];
+extern Lock *memLock;
+
 #endif
 
 #ifdef NETWORK

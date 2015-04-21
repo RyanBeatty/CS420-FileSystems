@@ -34,6 +34,11 @@ Lock *directoryLock;
 Lock *diskmapLock;
 Lock *diskLock;
 OpenFile *vmFile;
+
+BitMap *diskMap;         // bitmap for allocating disk sectors
+SynchDisk *vmDisk;   // our disk for secondary storage
+AddrSpace *reversePageTable[NumPhysPages];
+Lock *memLock;
 #endif
 
 #ifdef USER_PROGRAM // requires either FILESYS or FILESYS_STUB
@@ -188,6 +193,13 @@ Initialize(int argc, char **argv)
     diskmapLock = new(std::nothrow) Lock("diskmap Lock");
     diskLock = new(std::nothrow) Lock("diskLock");
     vmFile = NULL;
+
+    diskMap = new(std::nothrow) BitMap(NumSectors);
+    vmDisk = new(std::nothrow) SynchDisk("VM DISK");
+    memLock = new(std::nothrow) Lock("memLock");
+
+    for(int i = 0; i < NumPhysPages; ++i)
+        reversePageTable[i] = NULL;
 #endif
 
 #ifdef FILESYS_NEEDED
