@@ -159,6 +159,11 @@ FileSystem::FileSystem(bool format)
         fprintf(stderr, "error: failed to create VM file\n");
         exit(1);
     }
+    vmFile = Open("VM");
+    if(vmFile == NULL) {
+        fprintf(stderr, "error: failed to open VM file\n");
+        exit(1);
+    }
 }
 
 //----------------------------------------------------------------------

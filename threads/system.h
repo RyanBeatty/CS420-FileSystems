@@ -62,6 +62,7 @@ extern SynchDisk   *synchDisk;
 extern Lock *directoryLock;
 extern Lock *diskmapLock;
 extern Lock *diskLock;
+extern OpenFile *vmFile;
 #endif
 
 #ifdef NETWORK
