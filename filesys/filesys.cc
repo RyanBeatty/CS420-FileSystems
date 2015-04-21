@@ -55,6 +55,8 @@
 #include "system.h"
 #include <new>
 
+#define VM_FILE_SIZE (1024 * 50) + 100
+
 // Sectors containing the file headers for the bitmap of free sectors,
 // and the directory of files.  These file headers are placed in well-known 
 // sectors, so that they can be located on boot-up.
@@ -149,6 +151,13 @@ FileSystem::FileSystem(bool format)
     // the bitmap and directory; these are left open while Nachos is running
         freeMapFile = new(std::nothrow) OpenFile(FreeMapSector);
         directoryFile = new(std::nothrow) OpenFile(DirectorySector);
+    }
+
+
+    Remove("VM");
+    if(!Create("VM", VM_FILE_SIZE)) {
+        fprintf(stderr, "error: failed to create VM file\n");
+        exit(1);
     }
 }
 
