@@ -125,12 +125,22 @@ OpenFile::Write(char *into, int numBytes)
 int
 OpenFile::ReadAt(char *into, int numBytes, int position)
 {
+    bool release = false;
+    if(!diskLock->isHeldByCurrentThread()) {
+        release = true;
+        diskLock->Acquire();
+    }
+
     int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     char *buf;
 
-    if ((numBytes <= 0) || (position >= fileLength))
-    	return 0; 				// check request
+    if ((numBytes <= 0) || (position >= fileLength)) {
+    	if(release)
+            diskLock->Release();
+
+        return 0; 				// check request
+    }
     if ((position + numBytes) > fileLength)		
 	numBytes = fileLength - position;
     DEBUG('f', "Reading %d bytes at %d, from file of length %d.\n", 	
@@ -149,6 +159,8 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
     }
     // copy the part we want
     bcopy(&buf[position - (firstSector * SectorSize)], into, numBytes);
+    if(release)
+        diskLock->Release();
     delete [] buf;
     return numBytes;
 }
@@ -156,13 +168,16 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 int
 OpenFile::WriteAt(char *from, int numBytes, int position)
 {
+    diskLock->Acquire();
     int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
 
-    if ((numBytes <= 0) || (position >= fileLength))
-	return 0;				// check request
+    if ((numBytes <= 0) || (position >= fileLength)) {
+    	diskLock->Release();
+        return 0;				// check request
+    }
     if ((position + numBytes) > fileLength)
 	numBytes = fileLength - position;
     DEBUG('f', "Writing %d bytes at %d, from file of length %d.\n", 	
@@ -191,6 +206,7 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
     for (i = firstSector; i <= lastSector; i++)	
         synchDisk->WriteSector(hdr->ByteToSector(i * SectorSize), 
 					&buf[(i - firstSector) * SectorSize]);
+    diskLock->Release();
     delete [] buf;
     return numBytes;
 }

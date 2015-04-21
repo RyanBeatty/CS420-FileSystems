@@ -32,6 +32,7 @@ FileSystem  *fileSystem;
 SynchDisk   *synchDisk;
 Lock *directoryLock;
 Lock *diskmapLock;
+Lock *diskLock;
 #endif
 
 #ifdef USER_PROGRAM // requires either FILESYS or FILESYS_STUB
@@ -184,6 +185,7 @@ Initialize(int argc, char **argv)
     synchDisk = new(std::nothrow) SynchDisk("DISK");
     directoryLock = new(std::nothrow) Lock("directoryLock");
     diskmapLock = new(std::nothrow) Lock("diskmap Lock");
+    diskLock = new(std::nothrow) Lock("diskLock");
 #endif
 
 #ifdef FILESYS_NEEDED

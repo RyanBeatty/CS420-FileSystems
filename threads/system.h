@@ -61,6 +61,7 @@ extern FileSystem  *fileSystem;
 extern SynchDisk   *synchDisk;
 extern Lock *directoryLock;
 extern Lock *diskmapLock;
+extern Lock *diskLock;
 #endif
 
 #ifdef NETWORK
