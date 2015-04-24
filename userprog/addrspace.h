@@ -64,6 +64,8 @@ class AddrSpace {
 
     int *save_registers;
 
+    int wdSector;
+
   private:
 #ifndef USE_TLB
     TranslationEntry *pageTable;    // Assume linear page table translation

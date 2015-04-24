@@ -55,6 +55,8 @@ AddrSpace::AddrSpace(OpenFile *executable, bool chckpnt) {
 #endif
     id = processId++;
 
+    wdSector = 1;               // point to home directory sector
+
     is_checkpoint = chckpnt;
     if(chckpnt) {
         rebuild_system(executable);
@@ -300,6 +302,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
     id = processId++;
     is_checkpoint = false;
 
+
+    wdSector = 1;                                               // point to home directory sector
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && 
