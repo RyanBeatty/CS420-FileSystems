@@ -416,14 +416,16 @@ FileSystem::Remove(char *name)
 //----------------------------------------------------------------------
 
 void
-FileSystem::List()
+FileSystem::List(int dirSector)
 {
+    OpenFile *dirFile = new(std::nothrow) OpenFile(dirSector);
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
     directoryLock->Acquire();
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(dirFile);
     directory->List();
     directoryLock->Release();
     delete directory;
+    delete dirFile;
 }
 
 //----------------------------------------------------------------------
