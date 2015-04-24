@@ -119,6 +119,10 @@ MakeDir(char *name) {
     return ;
 }
 
+void List() {
+    fileSystem->List(1);
+}
+
 //----------------------------------------------------------------------
 // PerformanceTest
 // 	Stress the Nachos file system by creating a large file, writing
