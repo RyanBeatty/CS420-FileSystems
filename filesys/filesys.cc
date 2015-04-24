@@ -242,6 +242,90 @@ FileSystem::Create(char *name, int initialSize)
     return success;
 }
 
+bool
+FileSystem::MakeDir(char *name, int initialSize)
+{
+    Directory *directory;
+    OpenFile *dirFile;
+    BitMap *freeMap;
+    FileHeader *hdr;
+    int sector;
+    bool success;
+
+    DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
+
+    directoryLock->Acquire();
+    directory = new(std::nothrow) Directory(NumDirEntries);
+    dirFile = new(std::nothrow) OpenFile(currentThread->space->wdSector);
+    directory->FetchFrom(dirFile);
+
+    if (directory->Find(name) != -1)
+      success = false;          // file is already in directory
+    else {
+        diskmapLock->Acquire(); 
+        freeMap = new(std::nothrow) BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
+        sector = freeMap->Find();   // find a sector to hold the file header
+        if (sector == -1)       
+            success = false;        // no free block for file header 
+        else if (!directory->Add(name, sector))
+            success = false;    // no space in directory
+        else {
+            ASSERT(directory->Find(name) != -1);
+            hdr = new(std::nothrow) FileHeader();
+            if (!hdr->Allocate(freeMap, initialSize))
+                success = false;    // no space on disk for data
+            else {  
+                success = true; // everthing worked, flush all changes back to disk
+                hdr->WriteBack(sector);         
+                directory->WriteBack(dirFile);
+                freeMap->WriteBack(freeMapFile);
+
+                Directory *newDir = new(std::nothrow) Directory(NumDirEntries);
+                OpenFile *newFile = new(std::nothrow) OpenFile(sector);
+                ASSERT(newDir->Add(".", sector));
+                ASSERT(newDir->Add("..", currentThread->space->wdSector));
+                newDir->WriteBack(newFile);
+                delete newDir;
+                delete newFile;
+            }
+            delete hdr;
+        }
+        delete freeMap;
+        diskmapLock->Release();
+    }
+    directoryLock->Release();
+    delete directory;
+    delete dirFile;
+    return success;
+}
+
+bool
+FileSystem::ChangeDir(char *name) {
+    Directory *directory;
+    OpenFile *dirFile;
+    bool success = false;
+    int sector;
+
+    directoryLock->Acquire();
+    dirFile = new(std::nothrow) Openfile(currentThread->space->wdSector);
+    directory = new(std::nothrow) Directory(NumDirEntries);
+    directory->FetchFrom(dirFile);
+
+    sector = directory->Find(name);
+    if(sector == -1)
+        success = false;
+    else {
+        success = true;
+        currentThread->space->wdSector = sector;
+    }
+
+    directoryLock->Release();
+    delete directory;
+    delete dirFile;
+    return success;
+}
+
 //----------------------------------------------------------------------
 // FileSystem::Open
 // 	Open a file for reading and writing.  

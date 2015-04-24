@@ -90,6 +90,10 @@ class FileSystem {
     bool Create(char *name, int initialSize);  	
 					// Create a file (UNIX creat)
 
+    bool MakeDir(char *name, int initialSize);
+
+    bool ChangeDir(char *name);
+
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
