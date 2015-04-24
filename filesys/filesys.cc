@@ -308,7 +308,7 @@ FileSystem::ChangeDir(char *name) {
     int sector;
 
     directoryLock->Acquire();
-    dirFile = new(std::nothrow) Openfile(currentThread->space->wdSector);
+    dirFile = new(std::nothrow) OpenFile(currentThread->space->wdSector);
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(dirFile);
 

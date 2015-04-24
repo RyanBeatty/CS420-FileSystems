@@ -508,6 +508,32 @@ SC_CHECKPOINT() {
     return 0;
 }
 
+void
+SC_MAKEDIR(){
+    char *filename = LoadStringFromMemory(machine->ReadRegister(4));     // grab filename argument from register
+    if(filename == NULL)    // cant load filename string, so error
+        return ;
+
+    DEBUG('a', "filename: %s\n", filename);
+    ASSERT(fileSystem->MakeDir(filename, 0));                    // attempt to create a new file
+
+    delete [] filename;
+    return ;
+}
+
+void
+SC_CHANGEDIR(){
+    char *filename = LoadStringFromMemory(machine->ReadRegister(4));     // grab filename argument from register
+    if(filename == NULL)    // cant load filename string, so error
+        return ;
+
+    DEBUG('a', "filename: %s\n", filename);
+    ASSERT(fileSystem->ChangeDir(filename));                    // attempt to create a new file
+
+    delete [] filename;
+    return ;
+}
+
 
 int 
 find_virtual_page(int physicalPage) {
@@ -678,6 +704,16 @@ ExceptionHandler(ExceptionType which)
                     SC_CLOSE();
                     machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));        // increment pc to next intruction
                     return;
+                case SC_MakeDir: {
+                    SC_MAKEDIR();
+                    machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));        // increment pc to next intruction
+                    return;
+                }
+                case SC_ChangeDir: {
+                    SC_CHANGEDIR();
+                    machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));        // increment pc to next intruction
+                    return;
+                }
                 // case SC_CheckPoint: {
                 //     int result = SC_CHECKPOINT();
                 //     machine->WriteRegister(2, result);
