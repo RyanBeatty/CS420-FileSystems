@@ -515,7 +515,7 @@ SC_MAKEDIR(){
         return ;
 
     DEBUG('a', "filename: %s\n", filename);
-    ASSERT(fileSystem->MakeDir(filename, 0));                    // attempt to create a new file
+    ASSERT(fileSystem->MakeDir(filename, 0, currentThread->space->wdSector));                    // attempt to create a new file
 
     delete [] filename;
     return ;
@@ -527,8 +527,10 @@ SC_CHANGEDIR(){
     if(filename == NULL)    // cant load filename string, so error
         return ;
 
+    int sector;
     DEBUG('a', "filename: %s\n", filename);
-    ASSERT(fileSystem->ChangeDir(filename));                    // attempt to create a new file
+    ASSERT((fileSystem->ChangeDir(filename, currentThread->space->wdSector)));                    // attempt to create a new file
+    currentThread->space->wdSector = sector;
 
     delete [] filename;
     return ;

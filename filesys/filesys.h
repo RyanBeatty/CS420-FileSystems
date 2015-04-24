@@ -90,9 +90,9 @@ class FileSystem {
     bool Create(char *name, int initialSize);  	
 					// Create a file (UNIX creat)
 
-    bool MakeDir(char *name, int initialSize);
+    bool MakeDir(char *name, int initialSize, int wdSector);
 
-    bool ChangeDir(char *name);
+    int ChangeDir(char *name, int wdSector);
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
 

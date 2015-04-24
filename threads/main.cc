@@ -190,7 +190,11 @@ main(int argc, char **argv)
             fileSystem->Print();
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
-	}
+	} else if (!strcmp(*argv, "-md")) { // print a Nachos file
+        ASSERT(argc > 1);
+        MakeDir(*(argv + 1));
+        argCount = 2;
+    }
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {

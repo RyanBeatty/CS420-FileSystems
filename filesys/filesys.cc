@@ -243,7 +243,7 @@ FileSystem::Create(char *name, int initialSize)
 }
 
 bool
-FileSystem::MakeDir(char *name, int initialSize)
+FileSystem::MakeDir(char *name, int initialSize, int wdSector)
 {
     Directory *directory;
     OpenFile *dirFile;
@@ -256,7 +256,7 @@ FileSystem::MakeDir(char *name, int initialSize)
 
     directoryLock->Acquire();
     directory = new(std::nothrow) Directory(NumDirEntries);
-    dirFile = new(std::nothrow) OpenFile(currentThread->space->wdSector);
+    dirFile = new(std::nothrow) OpenFile(wdSector);
     directory->FetchFrom(dirFile);
 
     if (directory->Find(name) != -1)
@@ -284,7 +284,7 @@ FileSystem::MakeDir(char *name, int initialSize)
                 Directory *newDir = new(std::nothrow) Directory(NumDirEntries);
                 OpenFile *newFile = new(std::nothrow) OpenFile(sector);
                 ASSERT(newDir->Add(".", sector));
-                ASSERT(newDir->Add("..", currentThread->space->wdSector));
+                ASSERT(newDir->Add("..", wdSector));
                 newDir->WriteBack(newFile);
                 delete newDir;
                 delete newFile;
@@ -300,30 +300,24 @@ FileSystem::MakeDir(char *name, int initialSize)
     return success;
 }
 
-bool
-FileSystem::ChangeDir(char *name) {
+int
+FileSystem::ChangeDir(char *name, int wdSector) {
     Directory *directory;
     OpenFile *dirFile;
     bool success = false;
     int sector;
 
     directoryLock->Acquire();
-    dirFile = new(std::nothrow) OpenFile(currentThread->space->wdSector);
+    dirFile = new(std::nothrow) OpenFile(wdSector);
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(dirFile);
 
     sector = directory->Find(name);
-    if(sector == -1)
-        success = false;
-    else {
-        success = true;
-        currentThread->space->wdSector = sector;
-    }
 
     directoryLock->Release();
     delete directory;
     delete dirFile;
-    return success;
+    return sector;
 }
 
 //----------------------------------------------------------------------

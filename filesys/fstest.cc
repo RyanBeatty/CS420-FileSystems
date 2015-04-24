@@ -110,6 +110,15 @@ Print(char *name)
     return;
 }
 
+void
+MakeDir(char *name) {
+    if(!fileSystem->MakeDir(name, 0, 1))
+        printf("error: could not create directory\n");
+    else
+        printf("created directory\n");
+    return ;
+}
+
 //----------------------------------------------------------------------
 // PerformanceTest
 // 	Stress the Nachos file system by creating a large file, writing
