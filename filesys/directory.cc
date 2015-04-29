@@ -152,13 +152,15 @@ Directory::Add(char *name, int newSector)
     if (FindIndex(name) != -1)
 	return false;
 
-    for (int i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++) {
         if (!table[i].inUse) {
             table[i].inUse = true;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-        return true;
-	}
+            table[i].isDir = false;
+            return true;
+	    }
+    }
 
     Expand(tableSize * INCREASE_FACTOR);        // increase capacity
     for (int i = 0; i < tableSize; i++) {       // repeat search
@@ -235,8 +237,8 @@ Directory::List(int tabs)
             for(int j = 0; j < tabs; ++j)
                 printf("\t");
             printf("%s\n", table[i].name);
-
             if(table[i].isDir && strcmp(table[i].name, ".") && strcmp(table[i].name, "..")) {
+                fprintf(stderr, "in if\n");
                 Directory *dir = new(std::nothrow) Directory(10);
                 OpenFile *dirFile = new(std::nothrow) OpenFile(table[i].sector);
                 dir->FetchFrom(dirFile);

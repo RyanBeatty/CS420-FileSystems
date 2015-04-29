@@ -193,7 +193,7 @@ SC_OPEN(){
     if(filename == NULL)   // cant load filename string, so error
         return -1;
 
-    OpenFile *f = fileSystem->Open(filename);
+    OpenFile *f = fileSystem->Open(filename, currentThread->space->wdSector);
     delete [] filename;
     if(f == NULL)        // cant open file, so error
         return -1;
@@ -315,7 +315,7 @@ SpaceId SC_EXEC(){
     if(filename == NULL)                                // could not load string from memory
         return -1;
 
-    OpenFile *executable = fileSystem->Open(filename);  // create new open file object for the executable
+    OpenFile *executable = fileSystem->Open(filename, currentThread->space->wdSector);  // create new open file object for the executable
     if(executable == NULL) {                            // could not open file
         // printf("\nUnable to open file: %s\n", filename);
         fflush(stdout);

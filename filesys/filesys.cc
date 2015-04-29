@@ -186,7 +186,7 @@ FileSystem::FileSystem(bool format)
         fprintf(stderr, "error: failed to create VM file\n");
         exit(1);
     }
-    vmFile = Open("VM");
+    vmFile = Open("VM", DirectorySector);
     if(vmFile == NULL) {
         fprintf(stderr, "error: failed to open VM file\n");
         exit(1);
@@ -367,7 +367,7 @@ FileSystem::ChangeDir(char *name, int wdSector) {
 //----------------------------------------------------------------------
 
 OpenFile *
-FileSystem::Open(char *name)
+FileSystem::Open(char *name, int wdSector)
 {
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
     OpenFile *openFile = NULL;
@@ -375,12 +375,21 @@ FileSystem::Open(char *name)
 
     DEBUG('f', "Opening file %s\n", name);
     directoryLock->Acquire();
-    directory->FetchFrom(directoryFile);
+    wdSector = parse_path(&name, wdSector);
+    if(wdSector < 0) {
+        DEBUG('f', "bad path: %s\n", name);
+        directoryLock->Release();
+        return false;
+    }
+
+    OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
+    directory->FetchFrom(dirFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
 	openFile = new(std::nothrow) OpenFile(sector);	// name was found in directory
     directoryLock->Release();
     delete directory;
+    delete dirFile;
     return openFile;				// return NULL if not found
 }
 

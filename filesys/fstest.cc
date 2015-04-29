@@ -57,7 +57,7 @@ Copy(char *from, char *to)
 	return;
     }
     
-    openFile = fileSystem->Open(to);
+    openFile = fileSystem->Open(to, 1);
     ASSERT(openFile != NULL);
 
     printf("file length: %d\n", fileLength);
@@ -93,7 +93,7 @@ Print(char *name)
     int i, amountRead;
     char *buffer;
 
-    if ((openFile = fileSystem->Open(name)) == NULL) {
+    if ((openFile = fileSystem->Open(name, 1)) == NULL) {
 	printf("Print: unable to open file %s\n", name);
 	return;
     }
@@ -152,7 +152,7 @@ FileWrite()
       printf("Perf test: can't create %s\n", FileName);
       return;
     }
-    openFile = fileSystem->Open((char *)FileName);
+    openFile = fileSystem->Open((char *)FileName, 1);
     if (openFile == NULL) {
 	printf("Perf test: unable to open %s\n", FileName);
 	return;
@@ -178,7 +178,7 @@ FileRead()
     printf("Sequential read of %d byte file, in %d byte chunks\n", 
 	FileSize, ContentSize);
 
-    if ((openFile = fileSystem->Open((char *)FileName)) == NULL) {
+    if ((openFile = fileSystem->Open((char *)FileName, 1)) == NULL) {
 	printf("Perf test: unable to open file %s\n", FileName);
 	delete [] buffer;
 	return;

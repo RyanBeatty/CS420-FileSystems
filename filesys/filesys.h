@@ -94,7 +94,7 @@ class FileSystem {
 
     int ChangeDir(char *name, int wdSector);
 
-    OpenFile* Open(char *name); 	// Open a file (UNIX open)
+    OpenFile* Open(char *name, int wdSector); 	// Open a file (UNIX open)
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 

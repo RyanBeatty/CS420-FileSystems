@@ -29,7 +29,7 @@
 void
 StartProcess(char *filename)
 {
-    OpenFile *executable = fileSystem->Open(filename);
+    OpenFile *executable = fileSystem->Open(filename, 1);
     AddrSpace *space;
     
     if (executable == NULL) {
