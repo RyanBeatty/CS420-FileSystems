@@ -156,7 +156,7 @@ FileSystem::FileSystem(bool format)
 
 
     Remove("VM");
-    if(!Create("VM", VM_FILE_SIZE)) {
+    if(!Create("VM", VM_FILE_SIZE, DirectorySector)) {
         fprintf(stderr, "error: failed to create VM file\n");
         exit(1);
     }
@@ -197,7 +197,7 @@ FileSystem::FileSystem(bool format)
 //----------------------------------------------------------------------
 
 bool
-FileSystem::Create(char *name, int initialSize)
+FileSystem::Create(char *name, int initialSize, int wdSector)
 {
     Directory *directory;
     BitMap *freeMap;
@@ -209,7 +209,8 @@ FileSystem::Create(char *name, int initialSize)
 
     directoryLock->Acquire();
     directory = new(std::nothrow) Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
+    OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
+    directory->FetchFrom(dirFile);
 
     if (directory->Find(name) != -1)
       success = false;			// file is already in directory
@@ -230,7 +231,7 @@ FileSystem::Create(char *name, int initialSize)
 	        else {	
 	    	    success = true; // everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
-    	    	directory->WriteBack(directoryFile);
+    	    	directory->WriteBack(dirFile);
     	    	freeMap->WriteBack(freeMapFile);
 	        }
             delete hdr;
@@ -240,6 +241,7 @@ FileSystem::Create(char *name, int initialSize)
     }
     directoryLock->Release();
     delete directory;
+    delete dirFile;
     return success;
 }
 

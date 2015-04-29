@@ -176,7 +176,7 @@ SC_CREATE() {
         return ;
 
     DEBUG('a', "filename: %s\n", filename);
-    fileSystem->Create(filename, 0);                    // attempt to create a new file
+    fileSystem->Create(filename, 0, currentThread->space->wdSector);                    // attempt to create a new file
 
     delete [] filename;
     return ;
@@ -433,79 +433,6 @@ SC_EXIT() {
 
     delete currentThread->space->fileVector;                //closing the file vector by deleting it
     return ;
-}
-
-int
-SC_CHECKPOINT() {
-    char *filename = LoadStringFromMemory(machine->ReadRegister(4));
-    if(filename == NULL)                                // could not load string from memory
-        return -1;
-
-    fileSystem->Remove(filename);       // remove previous checkpoint file if it exists
-
-    fileSystem->Create(filename, 0);
-    OpenFile *f = fileSystem->Open(filename);
-
-    f->Write(CHECKPOINT_TAG, 12);           // write checkpoint tag and newline to file
-    f->Write("\n", 1);
-
-    char regBuffer[30];
-    for(int i = 0; i < NumTotalRegs; ++i) {                 // write registers to file
-        memset(regBuffer, '\0', sizeof(regBuffer));
-
-        int data = machine->ReadRegister(i);
-        sprintf(regBuffer, "%d", data);
-        f->Write(regBuffer, strlen(regBuffer));
-        f->Write("\n", 1);
-        // printf("write reg %d: %d\n", i, data);
-    }
-
-    memLock->Acquire();
-
-    char buffer[30];                                    
-    memset(buffer, '\0', sizeof(buffer));
-    sprintf(buffer, "%d", currentThread->space->GetNumPages());
-    f->Write(buffer, strlen(buffer));                                // write number of pages for process to file
-    f->Write("\n", 1);
-
-    // printf("numpage: %d\n", currentThread->space->GetNumPages());
-
-    for(unsigned int i = 0; i < NumPhysPages; ++i) {                // save all pages in ram to disk
-
-        int virtualPage = find_virtual_page(i);
-
-        if(virtualPage == -1)
-            continue;
-
-        int sector = reversePageTable[i]->sectorMap[virtualPage];
-        synchDisk->WriteSector(sector, &machine->mainMemory[i * PageSize]);
-    }
-
-    char pageBuffer[SectorSize];
-    for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i) {                   // write all sectors to file
-        memset(pageBuffer, '\0', SectorSize);
-        synchDisk->ReadSector(currentThread->space->sectorMap[i], pageBuffer);
-        f->Write(pageBuffer, SectorSize);
-    }
-
-    // char buffer[30];                                    
-    // memset(buffer, '\0', sizeof(buffer));
-    // sprintf(buffer, "%d", currentThread->space->GetNumPages());
-    // f->Write(buffer, strlen(buffer));                                // write number of pages for process to file
-    // f->Write("\n", 1);
-    // printf("start numpages: %d\n", currentThread->space->GetNumPages());
-
-    // for(unsigned int i = 0; i < currentThread->space->GetNumPages(); ++i) {     // write sector map to file
-    //     memset(buffer, '\0', sizeof(buffer));
-    //     sprintf(buffer, "%d", currentThread->space->sectorMap[i]);
-    //     f->Write(buffer, sizeof(buffer));
-    //     f->Write("\n", 1);
-    // }
-
-    memLock->Release();
-
-    delete f;
-    return 0;
 }
 
 void
