@@ -82,7 +82,6 @@ int parse_path(char **path, int wdSector) {
     while((i = cur_path.find("/")) != std::string::npos) {
         dirname = cur_path.substr(0, i);
         cur_path = cur_path.substr(i+1, cur_path.size());
-        printf("dirname: %s\n", dirname.c_str());
 
         Directory *dir = new(std::nothrow) Directory(NumDirEntries);
         OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
