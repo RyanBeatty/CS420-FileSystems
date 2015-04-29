@@ -33,6 +33,7 @@
 
 class DirectoryEntry {
   public:
+    bool isDir;
     bool inUse;				// Is this directory entry in use?
     int sector;				// Location on disk to find the 
 					//   FileHeader for this file 
@@ -63,7 +64,11 @@ class Directory {
     int Find(char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
 
+    bool isDirectory(char *name);
+
     bool Add(char *name, int newSector);  // Add a file name into the directory
+
+    bool AddDirectory(char *name, int newSector);
 
     bool Remove(char *name);		// Remove a file from the directory
 

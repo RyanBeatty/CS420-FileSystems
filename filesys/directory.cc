@@ -127,6 +127,14 @@ Directory::Find(char *name)
     return -1;
 }
 
+bool
+Directory::isDirectory(char *name) {
+    int i = FindIndex(name);
+    if(i != -1)
+        return table[i].isDir;
+    return false;
+}
+
 //----------------------------------------------------------------------
 // Directory::Add
 // 	Add a file into the directory.  Return true if successful;
@@ -164,6 +172,35 @@ Directory::Add(char *name, int newSector)
 
     ASSERT(false);  // should not happen
     return false;	// no space.  Fix when we have extensible files.
+}
+
+bool
+Directory::AddDirectory(char *name, int newSector) {
+    if (FindIndex(name) != -1)
+        return false;
+
+    for (int i = 0; i < tableSize; i++)
+        if (!table[i].inUse) {
+            table[i].inUse = true;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDir = true;
+        return true;
+    }
+
+    Expand(tableSize * INCREASE_FACTOR);        // increase capacity
+    for (int i = 0; i < tableSize; i++) {       // repeat search
+        if (!table[i].inUse) {
+            table[i].inUse = true;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDir = true;
+            return true;
+        }
+    }
+
+    ASSERT(false);  // should not happen
+    return false;   // no space.  Fix when we have extensible files.
 }
 
 //----------------------------------------------------------------------
