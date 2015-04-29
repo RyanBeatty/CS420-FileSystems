@@ -292,6 +292,13 @@ FileSystem::MakeDir(char *name, int initialSize, int wdSector)
     DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
 
     directoryLock->Acquire();
+    wdSector = parse_path(&name, wdSector);
+    if(wdSector < 0) {
+        DEBUG('f', "bad path: %s\n", name);
+        directoryLock->Release();
+        return false;
+    }
+
     directory = new(std::nothrow) Directory(NumDirEntries);
     dirFile = new(std::nothrow) OpenFile(wdSector);
     directory->FetchFrom(dirFile);
