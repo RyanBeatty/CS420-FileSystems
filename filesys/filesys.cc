@@ -477,34 +477,58 @@ GetDirectoryFile() {
     return directoryFile;
 }
 
-int
-isDirectory(std::string dir, int wdSector) {
-    char *dirname = new char[dir.size() + 1];
-    std::copy(dir.begin(), dir.end(), dirname);
-    dirname[dir.size()] = '\0'; // don't forget the terminating 0
+// int
+// isDirectory(std::string dir, int wdSector) {
+//     char *dirname = new char[dir.size() + 1];
+//     std::copy(dir.begin(), dir.end(), dirname);
+//     dirname[dir.size()] = '\0'; // don't forget the terminating 0
 
-    Directory *directory = new(std::nothrow) Directory(NumDirEntries);
-    OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
-    directory->FetchFrom(dirFile);
-    wdSector = directory->Find(dirname);
-    delete dirname;
-    return wdSector;
-}
+//     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
+//     OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
+//     directory->FetchFrom(dirFile);
+//     wdSector = directory->Find(dirname);
+//     delete dirname;
+//     return wdSector;
+// }
 
-int
-parse_path(char **path, int wdSector) {
-    std::string cur_path(*path), dir;
+// int
+// parse_path(char **path, int wdSector) {
+//     std::string cur_path(*path), dir;
+//     std::string::size_type i;
+//     while((i = cur_path.find("/")) != std::string::npos) {
+//         dir = cur_path.substr(0, i);
+//         if((wdSector = isDirectory(dir, wdSector)) < 0)
+//             return -1;
+//         cur_path = cur_path.substr(i, cur_path.length());
+//     }
+
+//     char *filename = new char[cur_path.size() + 1];
+//     std::copy(cur_path.begin(), cur_path.end(), filename);
+//     filename[cur_path.size()] = '\0'; // don't forget the terminating 0
+
+//     *path = filename;
+//     return wdSector;
+// }
+
+int parse_path(char **path, int wdSector) {
+    std::string cur_path(*path), dirname;
     std::string::size_type i;
     while((i = cur_path.find("/")) != std::string::npos) {
-        dir = cur_path.substr(0, i);
-        if((wdSector = isDirectory(dir, wdSector)) < 0)
+        dirname = cur_path.substr(0, i);
+
+        Directory *dir = new(std::nothrow) Directory(NumDirEntries);
+        OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
+        dir->FetchFrom(dirFile);
+        if(!dir->isDirectory((char *) dirname.c_str()))
             return -1;
-        cur_path = cur_path.substr(i, cur_path.length());
+        wdSector = dir->Find((char *) dirname.c_str());
+        delete dir;
+        delete dirFile;
     }
 
     char *filename = new char[cur_path.size() + 1];
     std::copy(cur_path.begin(), cur_path.end(), filename);
-    filename[cur_path.size()] = '\0'; // don't forget the terminating 0
+    filename[cur_path.size()] = '\0';
 
     *path = filename;
     return wdSector;

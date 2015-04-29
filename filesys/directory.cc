@@ -232,18 +232,17 @@ Directory::List(int tabs)
 {
     for (int i = 0; i < tableSize; i++) {
         if (table[i].inUse) {
-            if(table[i].isDir) {
+            for(int j = 0; j < tabs; ++j)
+                printf("\t");
+            printf("%s\n", table[i].name);
+
+            if(table[i].isDir && strcmp(table[i].name, ".") && strcmp(table[i].name, "..")) {
                 Directory *dir = new(std::nothrow) Directory(10);
                 OpenFile *dirFile = new(std::nothrow) OpenFile(table[i].sector);
                 dir->FetchFrom(dirFile);
                 dir->List(tabs + 1);
                 delete dir;
                 delete dirFile;
-            }
-            else {
-                for(int j = 0; j < tabs; ++j)
-                    printf("\t");
-                printf("%s\n", table[i].name);
             }
         }
     }
