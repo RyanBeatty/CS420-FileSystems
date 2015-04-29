@@ -76,6 +76,32 @@ OpenFile* freeMapFile;   // Bit map of free disk blocks,
 OpenFile* directoryFile;   // "Root" directory -- list of 
           // file names, represented as a file
 
+int parse_path(char **path, int wdSector) {
+    std::string cur_path(*path), dirname;
+    std::string::size_type i;
+    while((i = cur_path.find("/")) != std::string::npos) {
+        dirname = cur_path.substr(0, i);
+        cur_path = cur_path.substr(i+1, cur_path.size());
+        printf("dirname: %s\n", dirname.c_str());
+
+        Directory *dir = new(std::nothrow) Directory(NumDirEntries);
+        OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
+        dir->FetchFrom(dirFile);
+        if(!dir->isDirectory((char *) dirname.c_str()))
+            return -1;
+        wdSector = dir->Find((char *) dirname.c_str());
+        delete dir;
+        delete dirFile;
+    }
+
+    char *filename = new char[cur_path.size() + 1];
+    std::copy(cur_path.begin(), cur_path.end(), filename);
+    filename[cur_path.size()] = '\0';
+
+    *path = filename;
+    return wdSector;
+}
+
 
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
@@ -208,6 +234,14 @@ FileSystem::Create(char *name, int initialSize, int wdSector)
     DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
 
     directoryLock->Acquire();
+    wdSector = parse_path(&name, wdSector);
+    if(wdSector < 0) {
+        DEBUG('f', "bad path: %s\n", name);
+        directoryLock->Release();
+        return false;
+    }
+
+
     directory = new(std::nothrow) Directory(NumDirEntries);
     OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
     directory->FetchFrom(dirFile);
@@ -479,62 +513,6 @@ GetDirectoryFile() {
     return directoryFile;
 }
 
-// int
-// isDirectory(std::string dir, int wdSector) {
-//     char *dirname = new char[dir.size() + 1];
-//     std::copy(dir.begin(), dir.end(), dirname);
-//     dirname[dir.size()] = '\0'; // don't forget the terminating 0
-
-//     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
-//     OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
-//     directory->FetchFrom(dirFile);
-//     wdSector = directory->Find(dirname);
-//     delete dirname;
-//     return wdSector;
-// }
-
-// int
-// parse_path(char **path, int wdSector) {
-//     std::string cur_path(*path), dir;
-//     std::string::size_type i;
-//     while((i = cur_path.find("/")) != std::string::npos) {
-//         dir = cur_path.substr(0, i);
-//         if((wdSector = isDirectory(dir, wdSector)) < 0)
-//             return -1;
-//         cur_path = cur_path.substr(i, cur_path.length());
-//     }
-
-//     char *filename = new char[cur_path.size() + 1];
-//     std::copy(cur_path.begin(), cur_path.end(), filename);
-//     filename[cur_path.size()] = '\0'; // don't forget the terminating 0
-
-//     *path = filename;
-//     return wdSector;
-// }
-
-int parse_path(char **path, int wdSector) {
-    std::string cur_path(*path), dirname;
-    std::string::size_type i;
-    while((i = cur_path.find("/")) != std::string::npos) {
-        dirname = cur_path.substr(0, i);
-
-        Directory *dir = new(std::nothrow) Directory(NumDirEntries);
-        OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
-        dir->FetchFrom(dirFile);
-        if(!dir->isDirectory((char *) dirname.c_str()))
-            return -1;
-        wdSector = dir->Find((char *) dirname.c_str());
-        delete dir;
-        delete dirFile;
-    }
-
-    char *filename = new char[cur_path.size() + 1];
-    std::copy(cur_path.begin(), cur_path.end(), filename);
-    filename[cur_path.size()] = '\0';
-
-    *path = filename;
-    return wdSector;
-}
 
 
 
