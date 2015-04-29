@@ -228,11 +228,25 @@ Directory::Remove(char *name)
 //----------------------------------------------------------------------
 
 void
-Directory::List()
+Directory::List(int tabs)
 {
-   for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse)
-	    printf("%s\n", table[i].name);
+    for (int i = 0; i < tableSize; i++) {
+        if (table[i].inUse) {
+            if(table[i].isDir) {
+                Directory *dir = new(std::nothrow) Directory(10);
+                OpenFile *dirFile = new(std::nothrow) OpenFile(table[i].sector);
+                dir->FetchFrom(dirFile);
+                dir->List(tabs + 1);
+                delete dir;
+                delete dirFile;
+            }
+            else {
+                for(int j = 0; j < tabs; ++j)
+                    printf("\t");
+                printf("%s\n", table[i].name);
+            }
+        }
+    }
 }
 
 //----------------------------------------------------------------------

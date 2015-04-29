@@ -269,7 +269,7 @@ FileSystem::MakeDir(char *name, int initialSize, int wdSector)
         sector = freeMap->Find();   // find a sector to hold the file header
         if (sector == -1)       
             success = false;        // no free block for file header 
-        else if (!directory->Add(name, sector))
+        else if (!directory->AddDirectory(name, sector))
             success = false;    // no space in directory
         else {
             ASSERT(directory->Find(name) != -1);
@@ -284,8 +284,8 @@ FileSystem::MakeDir(char *name, int initialSize, int wdSector)
 
                 Directory *newDir = new(std::nothrow) Directory(NumDirEntries);
                 OpenFile *newFile = new(std::nothrow) OpenFile(sector);
-                ASSERT(newDir->Add(".", sector));
-                ASSERT(newDir->Add("..", wdSector));
+                ASSERT(newDir->AddDirectory(".", sector));
+                ASSERT(newDir->AddDirectory("..", wdSector));
                 newDir->WriteBack(newFile);
                 delete newDir;
                 delete newFile;
@@ -416,7 +416,7 @@ FileSystem::List(int dirSector)
     Directory *directory = new(std::nothrow) Directory(NumDirEntries);
     directoryLock->Acquire();
     directory->FetchFrom(dirFile);
-    directory->List();
+    directory->List(0);
     directoryLock->Release();
     delete directory;
     delete dirFile;
