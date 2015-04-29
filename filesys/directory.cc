@@ -168,6 +168,7 @@ Directory::Add(char *name, int newSector)
             table[i].inUse = true;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
+            table[i].isDir = false;
             return true;
         }
     }
