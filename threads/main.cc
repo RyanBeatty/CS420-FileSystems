@@ -35,6 +35,7 @@
 //    -l lists the contents of the Nachos directory
 //    -D prints the contents of the entire file system 
 //    -t tests the performance of the Nachos file system
+//    -md makes a new directory in the file system
 //
 //  NETWORK
 //    -n sets the network reliability
