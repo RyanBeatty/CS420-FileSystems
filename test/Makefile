@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD
+all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD makedir
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -124,3 +124,9 @@ atmfileD.o: atmfileD.c
 atmfileD: atmfileD.o start.o
 	$(LD) $(LDFLAGS) start.o atmfileD.o -o atmfileD.coff
 	../bin/coff2noff atmfileD.coff atmfileD
+
+makedir.o: makedir.c
+	$(CC) $(CFLAGS) -c makedir.c
+makedir: makedir.o start.o
+	$(LD) $(LDFLAGS) start.o makedir.o -o makedir.coff
+	../bin/coff2noff makedir.coff makedir
