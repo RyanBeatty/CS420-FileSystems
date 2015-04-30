@@ -180,7 +180,7 @@ FileSystem::FileSystem(bool format)
     }
 
 
-    Remove("VM");
+    Remove("VM", DirectorySector);
     if(!Create("VM", VM_FILE_SIZE, DirectorySector)) {
         fprintf(stderr, "error: failed to create VM file\n");
         exit(1);
@@ -350,9 +350,25 @@ FileSystem::ChangeDir(char *name, int wdSector) {
     int sector;
 
     directoryLock->Acquire();
+    wdSector = parse_path(&name, wdSector);
+    if(wdSector < 0) {
+        DEBUG('f', "bad path: %s\n", name);
+        directoryLock->Release();
+        return -1;
+    }
+
+
     dirFile = new(std::nothrow) OpenFile(wdSector);
     directory = new(std::nothrow) Directory(NumDirEntries);
     directory->FetchFrom(dirFile);
+
+    if(!directory->isDirectory(name)) {
+        DEBUG('f', "could not find directory %s\n", name);
+        directoryLock->Release();
+        delete directory;
+        delete dirFile;
+        return -1;
+    }
 
     sector = directory->Find(name);
 
@@ -414,7 +430,7 @@ FileSystem::Open(char *name, int wdSector)
 //----------------------------------------------------------------------
 
 bool
-FileSystem::Remove(char *name)
+FileSystem::Remove(char *name, int wdSector)
 { 
     Directory *directory;
     BitMap *freeMap;
@@ -423,14 +439,32 @@ FileSystem::Remove(char *name)
     
     DEBUG('r', "starting filesystem remove\n");
     directoryLock->Acquire();
+    wdSector = parse_path(&name, wdSector);
+    if(wdSector < 0) {
+        DEBUG('f', "bad path: %s\n", name);
+        directoryLock->Release();
+        return false;
+    }
+
+    OpenFile *dirFile = new(std::nothrow) OpenFile(wdSector);
     directory = new(std::nothrow) Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(dirFile);
     sector = directory->Find(name);
     if (sector == -1) {
        delete directory;
+       delete dirFile;
        directoryLock->Release();
        return false;			 // file not found 
     }
+
+    if(directory->isDirectory(name)) {
+        DEBUG('f', "cannot Remove() directory\n");
+        delete directory;
+        delete dirFile;
+        directoryLock->Release();
+        return false;
+    }
+
     fileHdr = new(std::nothrow) FileHeader();
     fileHdr->FetchFrom(sector);
 
@@ -443,11 +477,12 @@ FileSystem::Remove(char *name)
     directory->Remove(name);
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
-    directory->WriteBack(directoryFile);        // flush to disk
+    directory->WriteBack(dirFile);        // flush to disk
     directoryLock->Release();
     diskmapLock->Release();
     delete fileHdr;
     delete directory;
+    delete dirFile;
     delete freeMap;
 
     printf("finished removing file\n");

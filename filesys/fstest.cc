@@ -203,7 +203,7 @@ PerformanceTest()
     stats->Print();
     FileWrite();
     FileRead();
-    if (!fileSystem->Remove((char *)FileName)) {
+    if (!fileSystem->Remove((char *)FileName, 1)) {
       printf("Perf test: unable to remove %s\n", FileName);
       return;
     }

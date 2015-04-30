@@ -96,7 +96,7 @@ class FileSystem {
 
     OpenFile* Open(char *name, int wdSector); 	// Open a file (UNIX open)
 
-    bool Remove(char *name);  		// Delete a file (UNIX unlink)
+    bool Remove(char *name, int wdSector);  		// Delete a file (UNIX unlink)
 
     void List(int dirSector);			// List all the files in the file system
 
