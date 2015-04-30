@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD makedir vmtorture
+all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD makedir vmtorture Xkid qmatmult qsort
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -136,3 +136,21 @@ vmtorture.o: vmtorture.c
 vmtorture: vmtorture.o start.o
 	$(LD) $(LDFLAGS) start.o vmtorture.o -o vmtorture.coff
 	../bin/coff2noff vmtorture.coff vmtorture
+
+qmatmult.o: qmatmult.c
+	$(CC) $(CFLAGS) -c qmatmult.c
+qmatmult: qmatmult.o start.o
+	$(LD) $(LDFLAGS) start.o qmatmult.o -o qmatmult.coff
+	../bin/coff2noff qmatmult.coff qmatmult
+
+qsort.o: qsort.c
+	$(CC) $(CFLAGS) -c qsort.c
+qsort: qsort.o start.o
+	$(LD) $(LDFLAGS) start.o qsort.o -o qsort.coff
+	../bin/coff2noff qsort.coff qsort
+
+Xkid.o: Xkid.c
+	$(CC) $(CFLAGS) -c Xkid.c
+Xkid: Xkid.o start.o
+	$(LD) $(LDFLAGS) start.o Xkid.o -o Xkid.coff
+	../bin/coff2noff Xkid.coff Xkid
