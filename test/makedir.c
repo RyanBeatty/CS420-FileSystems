@@ -12,12 +12,12 @@ int main() {
 	Create("test/foo");
 	id = Open("test/foo");
 	if(id < 0) {
-		prints("error: file open failed\n");
+		prints("error: file open failed\n", ConsoleOutput);
 		Close(id);
 		Exit(1);
 	}
 
-	prints("test passed\n");
+	prints("test passed\n", ConsoleOutput);
 	Close(id);
 	Exit(0);
 }

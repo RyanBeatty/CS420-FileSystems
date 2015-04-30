@@ -448,19 +448,19 @@ SC_MAKEDIR(){
     return ;
 }
 
-void
+int
 SC_CHANGEDIR(){
     char *filename = LoadStringFromMemory(machine->ReadRegister(4));     // grab filename argument from register
     if(filename == NULL)    // cant load filename string, so error
-        return ;
+        return -1;
 
     int sector;
     DEBUG('a', "filename: %s\n", filename);
-    ASSERT((fileSystem->ChangeDir(filename, currentThread->space->wdSector)));                    // attempt to create a new file
+    sector = fileSystem->ChangeDir(filename, currentThread->space->wdSector);                    // attempt to create a new file
     currentThread->space->wdSector = sector;
 
     delete [] filename;
-    return ;
+    return sector;
 }
 
 
@@ -639,7 +639,8 @@ ExceptionHandler(ExceptionType which)
                     return;
                 }
                 case SC_ChangeDir: {
-                    SC_CHANGEDIR();
+                    int result = SC_CHANGEDIR();
+                    machine->WriteRegister(2, result);
                     machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));        // increment pc to next intruction
                     return;
                 }

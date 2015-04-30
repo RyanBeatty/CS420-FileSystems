@@ -137,7 +137,7 @@ void Yield();
 
 void MakeDir(char *name);
 
-void ChangeDir(char *name);
+int ChangeDir(char *name);
 
 
 #endif /* IN_ASM */

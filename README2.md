@@ -29,6 +29,8 @@ Changes Made to filesys.cc
 
 * I've changed Create(), Open(), MakeDir(), ChangeDir(), Remove(), so that they all now take in an extra parameter "wdSector" that is the sector of the current working directory of the user. Also they all now use parse_path() to parse the path name the user passes to them to implement relative and absolute paths.
 
+* Can Remove files from subdirectories but cannot Remove directories at all
+
 ############################
 Changes Made to addrspace.cc
 ############################
