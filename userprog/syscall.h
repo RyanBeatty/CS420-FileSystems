@@ -135,7 +135,7 @@ void Fork(void (*func)());
  */
 void Yield();
 
-void MakeDir(char *name);
+int MakeDir(char *name);
 
 int ChangeDir(char *name);
 
