@@ -7,8 +7,15 @@ and specify relative paths for creating files
 
 int main() {
 	OpenFileId id;
+	int result;
 
-	MakeDir("test");
+	result = MakeDir("test");
+	if(result == -1) {
+		prints("error: could not create Directory\n", ConsoleOutput);
+		Exit(1);
+	}
+	prints("created directory\n", ConsoleOutput);
+
 	Create("test/foo");
 	id = Open("test/foo");
 	if(id < 0) {

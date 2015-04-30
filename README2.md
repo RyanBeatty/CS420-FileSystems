@@ -88,6 +88,8 @@ to run:
 
 *****output****
 finished removing file
+created directory
+test passed
 
 finished removing file
 VM
