@@ -34,7 +34,7 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD rmakedir vmtorture Xkid qmatmult qsort
+all: halt shell matmult sort fstest1 cp share1 share2 sharekid1 sharekid2 atmfile atmfileB atmfileC atmfileD rmakedir amakedir vmtorture Xkid qmatmult qsort
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -130,6 +130,12 @@ rmakedir.o: rmakedir.c
 rmakedir: rmakedir.o start.o
 	$(LD) $(LDFLAGS) start.o rmakedir.o -o rmakedir.coff
 	../bin/coff2noff rmakedir.coff rmakedir
+
+amakedir.o: amakedir.c
+	$(CC) $(CFLAGS) -c amakedir.c
+amakedir: amakedir.o start.o
+	$(LD) $(LDFLAGS) start.o amakedir.o -o amakedir.coff
+	../bin/coff2noff amakedir.coff amakedir
 
 vmtorture.o: vmtorture.c
 	$(CC) $(CFLAGS) -c vmtorture.c

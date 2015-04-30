@@ -100,6 +100,37 @@ test 					// created directory
 	foo 				// created file in directory
 
 
+##########
+amakedir.c
+##########
+
+* Tests that a userland process can create a new directory, change directories into that directory, and make a file within the new directory
+
+files to cp over:
+/test/amakedir
+
+to run:
+./nachos -x amakedir
+./nachos -l 			// print filesystem
+
+****output****
+finished removing file
+created directory
+changed into directory
+test passed
+
+
+finished removing file
+VM
+amakedir
+test
+        .
+        ..
+        foo
+
+
+
+
 
 #########
 matmult.c
