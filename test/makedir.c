@@ -6,14 +6,19 @@ and specify relative paths for creating files
 #include "syscall.h"
 
 int main() {
+	OpenFileId id;
+
 	MakeDir("test");
 	Create("test/foo");
-	if(Open("test/foo") < 0) {
+	id = Open("test/foo");
+	if(id < 0) {
 		prints("error: file open failed\n");
+		Close(id);
 		Exit(1);
 	}
 
 	prints("test passed\n");
+	Close(id);
 	Exit(0);
 }
 
