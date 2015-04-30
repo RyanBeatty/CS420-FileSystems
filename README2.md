@@ -74,16 +74,16 @@ Misc. Changes
 ----Testing-----
 
 #########
-makedir.c
+rmakedir.c
 #########
 
 * Tests that a userland process can create a new directory and create and open a file within that directory by using a relative path for the file.
 
 files to cp over:
-/test/makedir
+/test/rmakedir
 
 to run:
-./nachos -x makedir
+./nachos -x rmakedir
 ./nachos -l 		// print filesystem
 
 *****output****
@@ -93,11 +93,13 @@ test passed
 
 finished removing file
 VM
-makedir
-test
+rmakedir
+test 					// created directory
 	.
 	..
-	foo
+	foo 				// created file in directory
+
+
 
 #########
 matmult.c
@@ -147,6 +149,9 @@ i = 28
 i = 29
 C[29,29] = 25230
 Machine halting!
+
+
+
 
 #########
 vmtorture
