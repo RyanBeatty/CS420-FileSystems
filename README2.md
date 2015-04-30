@@ -64,3 +64,82 @@ Misc. Changes
 
 * I changed my HandleTLBFault in exception.cc to use "vmFile" instead of "synchDisk" to page in and out pages. It now uses WriteAt and ReadAt to write and read sectors of the VM.
 
+
+
+
+
+
+----Testing-----
+
+#########
+makedir.c
+#########
+
+* Tests that a userland process can create a new directory and create and open a file within that directory by using a relative path for the file.
+
+files to cp over:
+/test/makedir
+
+to run:
+./nachos -x makedir
+./nachos -l 		// print filesystem
+
+*****output****
+finished removing file
+
+finished removing file
+VM
+makedir
+test
+	.
+	..
+	foo
+
+#########
+matmult.c
+#########
+
+* matmult from the third nachos project that is designed to stress VM.
+
+files to cp over:
+/test/matmult
+
+to run:
+./nachos -x matmult
+
+****output****
+finished removing file
+Starting matmult
+Initialization Complete
+i = 0
+i = 1
+i = 2
+i = 3
+i = 4
+i = 5
+i = 6
+i = 7
+i = 8
+i = 9
+i = 10
+i = 11
+i = 12
+i = 13
+i = 14
+i = 15
+i = 16
+i = 17
+i = 18
+i = 19
+i = 20
+i = 21
+i = 22
+i = 23
+i = 24
+i = 25
+i = 26
+i = 27
+i = 28
+i = 29
+C[29,29] = 25230
+Machine halting!
