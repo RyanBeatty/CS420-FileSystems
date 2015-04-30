@@ -67,6 +67,7 @@ extern void AlarmTest();
 extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
+extern void MakeDirectory(char *name);
 
 //----------------------------------------------------------------------
 // main
@@ -193,7 +194,7 @@ main(int argc, char **argv)
             PerformanceTest();
 	} else if (!strcmp(*argv, "-md")) { // print a Nachos file
         ASSERT(argc > 1);
-        MakeDir(*(argv + 1));
+        MakeDirectory(*(argv + 1));
         argCount = 2;
     }
 #endif // FILESYS

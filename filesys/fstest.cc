@@ -111,7 +111,7 @@ Print(char *name)
 }
 
 void
-MakeDir(char *name) {
+MakeDirectory(char *name) {
     if(!fileSystem->MakeDir(name, 0, 1))
         printf("error: could not create directory\n");
     else
