@@ -80,15 +80,16 @@ SynchDisk::~SynchDisk()
 void
 SynchDisk::ReadSector(int sectorNumber, char* data)
 {
-    // cacheLock->Acquire();
-    // if(cache.inCache(sectorNumber)) {
-    //     SectorCopy(data, cache.Get(sectorNumber));
-    //     cacheLock->Release();
-    //     return ;
-    // }
-    // cacheLock->Release();
-
     lock->Acquire();			// only one disk I/O at a time
+    cacheLock->Acquire();
+    if(cache.inCache(sectorNumber)) {
+        SectorCopy(data, cache.Get(sectorNumber));
+        cacheLock->Release();
+        lock->Release();
+        return ;
+    }
+    cacheLock->Release();
+
     disk->ReadRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
     cacheLock->Acquire();
