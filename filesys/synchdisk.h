@@ -15,7 +15,7 @@
 #include "disk.h"
 #include "synch.h"
 
-#define CACHE_SIZE 10
+#define CACHE_SIZE 4
 
 void SectorCopy(char *dst, char *src);
 
@@ -30,6 +30,12 @@ public:
         valid = false;
         sector = -1;
         bzero(block, SectorSize);
+    }
+
+    void toString() {
+        printf("Entry\n");
+        printf("\tvalid: %s\n", valid ? "true" : "false");
+        printf("\tsector: %d\n", sector);
     }
 };
 
@@ -62,7 +68,8 @@ public:
         }
 
         int victim = Random() % CACHE_SIZE;
-        entries[victim].valid = false;
+        entries[victim].sector = sector;
+        SectorCopy(entries[victim].block, data);
     }
 
     void Delete(int sector) {
@@ -72,6 +79,14 @@ public:
                 return ;
             }
         }
+    }
+
+    void toString() {
+        printf("--------------\n");
+        printf("CACHE\n");
+        printf("--------------\n");
+        for(int i = 0; i < CACHE_SIZE; ++i)
+            entries[i].toString();
     }
 private:
     int IndexOf(int sector) {
