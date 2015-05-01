@@ -149,6 +149,62 @@ test
         foo
 
 
+#########
+dirtest.c
+#########
+
+* Creates a file 3 directories deep and copies the contents of some input file to the new file.
+
+files to cp over:
+filesys/test/toobig // cp over with the filename "input"
+/test/dirtest
+
+to run:
+./nachos -cp test/toobig input // reminder to cp over as "input"
+./nachos -x dirtest
+./nachos -l 					// list filesystem
+./nachos -p hello/world/foo/bar // print out file
+
+****output****
+finished removing file
+created directory: hello
+created directory: hello/world
+created directory: hello/world/foo
+changed directory
+created file: bar
+copied over file
+
+
+#contents of filesystem
+finished removing file
+VM
+input
+dirtest
+hello
+        .
+        ..
+        world
+                .
+                ..
+                foo
+                        .
+                        ..
+                        bar
+
+#contents of hello/world/foo/bar
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas tincidunt volutpat odio nec viverra. Phasellus ut quam at sapien rhoncus laoreet et non nunc. Sed ut consequat quam. Aliquam faucibus dictum posuere. Sed ornare sed sem et egestas. Duis semper odio a augue fermentum luctus. Suspendisse eget magna a magna tempus euismod. Aliquam tincidunt sollicitudin arcu, a pulvinar metus eleifend eu. Sed condimentum tempor eros, nec venenatis sapien fringilla sit amet. Pellentesque vitae enim urna. Nullam risus augue, vehicula eu arcu nec, accumsan volutpat ligula. Sed cursus eu risus ac vehicula. Aenean interdum in lorem sed iaculis.
+
+Donec diam ipsum, tincidunt quis mollis quis, vulputate eu lectus. In nec diam quis mauris aliquam feugiat. Sed placerat pulvinar tincidunt. Praesent sodales ac est ut tempor. Etiam id malesuada neque, non tincidunt enim. In ac malesuada ipsum. Vivamus efficitur congue erat. Vestibulum non tristique metus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla id consequat mi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nam vitae viverra neque. Donec quis ex tincidunt, facilisis metus ac, convallis neque. Vestibulum interdum neque in molestie porttitor.
+
+Ut a arcu vel quam faucibus tempus eu eget sapien. Quisque sit amet laoreet purus, ac semper lorem. Morbi nec ex porta, imperdiet sem tempor, laoreet ipsum. Phasellus aliquam massa nec erat semper vestibulum. Suspendisse a tincidunt eros, eu imperdiet ligula. Morbi pretium lorem tortor, sed maximus lacus tempor vel. Pellentesque ac nunc eros. Pellentesque malesuada maximus enim a sollicitudin. Morbi eget tortor at massa mollis tincidunt.
+
+Proin ut sem porta, imperdiet sapien eget, iaculis mauris. Integer vitae diam maximus, mattis nulla nec, vulputate erat. Vivamus vel orci at elit hendrerit porttitor sit amet et elit. Fusce sed leo nibh. Donec urna magna, pellentesque quis tortor vitae, malesuada pretium urna. Praesent dui augue, feugiat a neque cursus, lacinia venenatis sapien. Fusce at metus imperdiet, malesuada arcu vel, fermentum tellus. Etiam rutrum vel libero ac aliquam. Nullam condimentum mollis felis, vitae dapibus magna accumsan vitae. Donec non lectus vestibulum, feugiat metus at, finibus justo. In volutpat non lectus a accumsan. Vestibulum condimentum tincidunt tortor, vel convallis quam sollicitudin sit amet. Phasellus placerat, nunc id maximus feugiat, velit libero tincidunt tellus, quis tincidunt sapien nisl vitae tortor. Curabitur mollis libero sit amet lorem faucibus mattis. In hac habitasse platea dictumst.
+
+In in urna sit amet tellus tristique imperdiet a eget lacus. Cras id augue magna. Sed id ullamcorper arcu. Proin euismod pretium euismod. In ipsum mi, venenatis at molestie a, consectetur id ligula. Ut pharetra sed mauris ut porta. In varius nibh nec nibh vulputate bibendum. Praesent facilisis, massa sed facilisis suscipit, risus risus commodo nulla, vestibulum facilisis tellus nisi vitae libero.
+
+Proin lobortis erat non elit accumsan consequat. Vivamus eu lacus vitae libero molestie fermentum non vel orci. Mauris mi diam, tincidunt iaculis tortor vel, mattis laoreet massa. Nam id neque quis leo ultricies ultrices. Quisque bibendum vestibulum est, vel eleifend arcu rutrum ut. Morbi mattis ultrices sollicitudin. Nulla a luctus urna. Donec sollicitudin justo ac est laoreet, id semper turpis convallis. Nullam viverra erat enim, quis varius lorem tincidunt nec. In hac habitasse platea dictumst. Donec nunc mauris, consequat ac metus vitae, eleifend tincidunt libero. Aenean ultricies molestie diam ut semper. Donec purus ante, luctus id posuere at, vehicula sed nulla. Donec in elit non diam hendrerit tincidunt non vel odio.
+
+Mauris at sagittis odio. Integer porttitor nisi id scelerisque elementum. Maecenas eget ultrices erat. Sed elit augue, iaculis nec finibus quis, lacinia efficitur turpis. Morbi in vulputate orci, a commodo orci. Curabitur magna velit, suscipit et luctus et amet.
 
 
 
@@ -249,7 +305,12 @@ Paging: faults 131281
 Performance Tests
 #################
 
+* I ran the Performace Test without caching and with caching
 
+to run:
+./nachos -t
+
+****output****
 # Without Caching
 finished removing file
 Starting file system performance test:
@@ -269,10 +330,10 @@ TLB: misses 0
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
-# with Caching
+# With Caching
 finished removing file
 Starting file system performance test:
-Ticks: total 612980, idle 607280, system 5700, user 0
+Ticks: total 613690, idle 606870, system 6820, user 0
 Disk I/O: reads 42, writes 25 									// fewer reads
 Console I/O: reads 0, writes 0
 TLB: misses 0
@@ -281,8 +342,8 @@ Network I/O: packets received 0, sent 0
 Sequential write of 500 byte file, in 10 byte chunks
 Sequential read of 500 byte file, in 10 byte chunks
 finished removing file
-Ticks: total 1813050, idle 1787030, system 26020, user 0
-Disk I/O: reads 126, writes 91 									// notice alot less reads
+Ticks: total 1781070, idle 1746850, system 34220, user 0
+Disk I/O: reads 72, writes 91 									// alot fewer reads
 Console I/O: reads 0, writes 0
 TLB: misses 0
 Paging: faults 0
