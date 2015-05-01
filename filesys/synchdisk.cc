@@ -51,6 +51,7 @@ SynchDisk::SynchDisk(char* name)
 {
     semaphore = new(std::nothrow) Semaphore("synch disk", 0);
     lock = new(std::nothrow) Lock("synch disk lock");
+    cacheLock = new(std::nothrow) Lock("cacheLock");
     disk = new(std::nothrow) Disk(name, DiskRequestDone, (int) this);
 }
 
@@ -79,17 +80,22 @@ SynchDisk::~SynchDisk()
 void
 SynchDisk::ReadSector(int sectorNumber, char* data)
 {
-    lock->Acquire();			// only one disk I/O at a time
-    if(cache.inCache(sectorNumber))
+    cacheLock->Acquire();
+    if(cache.inCache(sectorNumber)) {
         SectorCopy(data, cache.Get(sectorNumber));
-    else {
-    // cache.toString();
-        disk->ReadRequest(sectorNumber, data);
-        cache.Add(data, sectorNumber);
-    // cache.toString();
+        cacheLock->Release();
+        return ;
     }
+    cacheLock->Release();
+
+    lock->Acquire();			// only one disk I/O at a time
+    disk->ReadRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
     lock->Release();
+
+    cacheLock->Acquire();
+    cache.Add(data, sectorNumber);
+    cacheLock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -104,9 +110,11 @@ SynchDisk::ReadSector(int sectorNumber, char* data)
 void
 SynchDisk::WriteSector(int sectorNumber, char* data)
 {
+    cacheLock->Acquire();
+    cache.Delete(sectorNumber);
+    cacheLock->Release();
+
     lock->Acquire();			// only one disk I/O at a time
-    if(cache.inCache(sectorNumber))
-        cache.Delete(sectorNumber);
     disk->WriteRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
     lock->Release();

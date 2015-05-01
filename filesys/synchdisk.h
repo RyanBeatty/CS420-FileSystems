@@ -136,6 +136,7 @@ class SynchDisk {
 					// with the interrupt handler
     Lock *lock;		  		// Only one read/write request
 					// can be sent to the disk at a time
+    Lock *cacheLock;
     Cache cache;
 };
 
