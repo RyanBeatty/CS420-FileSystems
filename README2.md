@@ -12,14 +12,15 @@ Changes Made to synchdisk.h and synchdisk.cc
 
 * Added Cache class which operates on an array of CacheEntry objects to implement the cache. The Cache Class has public methods Get(), Add(), Delete(), and inCache(). Get() takes the sector number of the file block you are trying to get and returns NULL if it is not in the cache or a character array of the contents of the file block. Add() takes a char * of the file block data and the sector number where it is stored on disk and adds it as an entry to the cache, replacing a previous entry if the cache is full. Delete() takes a sector number and invalidates the CacheEntry with the same sector number or is a no op if the sector number isn't in the cache. inCache() returns true if the sector number is in the cache and false if not. At the moment, the Cache's size is set to 10.
 
+* Added CopySector(char *dst, char *src) method which copies SectorSize number of bytes from "src" to "dst"
+
 * Added a Cache object to the SynchDisk class
 
 * Added a lock to the SynchDisk class to synchronize access to the Cache object
 
-*   
+* Changed SynchDisk::ReadSector() so that it uses the Cache. First Acquire() the cacheLock then check if the current sector requested is in the Cache. If it is in the Cache, copy the block from the Cache over to "data", release the cacheLock and return. If it is not in the Cache, Add() it to the Cache after the request for the sector has been serviced.
 
-
-
+* Changed SynchDisk::WriteSector() to use the Cache. It now will start out by Acquiring the cacheLock and Deleting the requested sector to read from the Cache. 
 
 
 ----My Implementatino of Directories is as follows----
