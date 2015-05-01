@@ -19,67 +19,10 @@
 #include "synchdisk.h"
 #include <new>
 
-#define CACHE_SIZE 10
-
 void SectorCopy(char *dst, char *src) {
     for(int i = 0; i < SectorSize; ++i)
         dst[i] = src[i];
 }
-
-
-class CacheEntry {
-public:
-    bool valid;
-    int sector;
-    char block[SectorSize];
-
-    CacheEntry() {
-        valid = false;
-        sector = -1;
-        bzero(block, SectorSize);
-    }
-};
-
-class Cache {
-public:
-    CacheEntry entries[CACHE_SIZE];
-
-    Cache() {
-        for(int i = 0; i < CACHE_SIZE; ++i)
-            entries[i].valid = false;
-    }
-
-    bool inCache(int sector) {
-        for(int i = 0; i < CACHE_SIZE; ++i) {
-            if(entries[i].valid && entries[i].sector == sector)
-                return true;
-        }
-        return false;
-    }
-
-    void Add(char *data, int sector) {
-        for(int i = 0; i < CACHE_SIZE; ++i) {
-            if(!entries[i].valid) {
-                entries[i].valid = true;
-                entries[i].sector = sector;
-                SectorCopy(entries[i].block, data);
-                return ;
-            }
-        }
-
-        int victim = Random() % CACHE_SIZE;
-        entries[victim].valid = false;
-    }
-
-    void Delete(int sector) {
-        for(int i = 0; i < CACHE_SIZE; ++i) {
-            if(entries[i].sector == sector) {
-                entries[i].valid = false;
-                return ;
-            }
-        }
-    }
-};
 
 //----------------------------------------------------------------------
 // DiskRequestDone
@@ -137,7 +80,12 @@ void
 SynchDisk::ReadSector(int sectorNumber, char* data)
 {
     lock->Acquire();			// only one disk I/O at a time
-    disk->ReadRequest(sectorNumber, data);
+    if(cache.inCache(sectorNumber))
+        SectorCopy(data, cache.Get(sectorNumber));
+    else {
+        disk->ReadRequest(sectorNumber, data);
+        cache.Add(data, sectorNumber);
+    }
     semaphore->P();			// wait for interrupt
     lock->Release();
 }
