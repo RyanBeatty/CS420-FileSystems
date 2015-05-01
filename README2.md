@@ -2,6 +2,25 @@
 NACHOS File System implementation
 Project 2
 
+----My Implementation of Caching File Blocks is as follows----
+
+############################################
+Changes Made to synchdisk.h and synchdisk.cc
+############################################
+
+* Added CacheEntry class which is used to store an entry in the Cache. has data members "valid", "sector", and "block". "valid" is a boolean stating if the current Entry is valid and in use (meaning the current file block has not been changed from a write operation), "sector" is the sector number that the CacheEntry is holding the data of, and "block" is a character array which holds the actual data on the file block.
+
+* Added Cache class which operates on an array of CacheEntry objects to implement the cache. The Cache Class has public methods Get(), Add(), Delete(), and inCache(). Get() takes the sector number of the file block you are trying to get and returns NULL if it is not in the cache or a character array of the contents of the file block. Add() takes a char * of the file block data and the sector number where it is stored on disk and adds it as an entry to the cache, replacing a previous entry if the cache is full. Delete() takes a sector number and invalidates the CacheEntry with the same sector number or is a no op if the sector number isn't in the cache. inCache() returns true if the sector number is in the cache and false if not. At the moment, the Cache's size is set to 10.
+
+* Added a Cache object to the SynchDisk class
+
+* Added a lock to the SynchDisk class to synchronize access to the Cache object
+
+*   
+
+
+
+
 
 ----My Implementatino of Directories is as follows----
 
@@ -222,3 +241,49 @@ Disk I/O: reads 657228, writes 131505
 Console I/O: reads 0, writes 686
 TLB: misses 5161231
 Paging: faults 131281
+
+
+
+#################
+Performance Tests
+#################
+
+
+# Without Caching
+finished removing file
+Starting file system performance test:
+Ticks: total 632940, idle 628860, system 4080, user 0
+Disk I/O: reads 98, writes 25
+Console I/O: reads 0, writes 0
+TLB: misses 0
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+Sequential write of 500 byte file, in 10 byte chunks
+Sequential read of 500 byte file, in 10 byte chunks
+finished removing file
+Ticks: total 1941050, idle 1916980, system 24070, user 0
+Disk I/O: reads 617, writes 91
+Console I/O: reads 0, writes 0
+TLB: misses 0
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+# with Caching
+finished removing file
+Starting file system performance test:
+Ticks: total 612980, idle 607280, system 5700, user 0
+Disk I/O: reads 42, writes 25 									// fewer reads
+Console I/O: reads 0, writes 0
+TLB: misses 0
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+Sequential write of 500 byte file, in 10 byte chunks
+Sequential read of 500 byte file, in 10 byte chunks
+finished removing file
+Ticks: total 1813050, idle 1787030, system 26020, user 0
+Disk I/O: reads 126, writes 91 									// notice alot less reads
+Console I/O: reads 0, writes 0
+TLB: misses 0
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+

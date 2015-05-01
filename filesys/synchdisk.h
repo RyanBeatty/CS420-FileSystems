@@ -15,7 +15,7 @@
 #include "disk.h"
 #include "synch.h"
 
-#define CACHE_SIZE 4
+#define CACHE_SIZE 10
 
 void SectorCopy(char *dst, char *src);
 
