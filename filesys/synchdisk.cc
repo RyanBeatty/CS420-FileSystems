@@ -80,22 +80,22 @@ SynchDisk::~SynchDisk()
 void
 SynchDisk::ReadSector(int sectorNumber, char* data)
 {
-    cacheLock->Acquire();
-    if(cache.inCache(sectorNumber)) {
-        SectorCopy(data, cache.Get(sectorNumber));
-        cacheLock->Release();
-        return ;
-    }
-    cacheLock->Release();
+    // cacheLock->Acquire();
+    // if(cache.inCache(sectorNumber)) {
+    //     SectorCopy(data, cache.Get(sectorNumber));
+    //     cacheLock->Release();
+    //     return ;
+    // }
+    // cacheLock->Release();
 
     lock->Acquire();			// only one disk I/O at a time
     disk->ReadRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
-    lock->Release();
-
     cacheLock->Acquire();
     cache.Add(data, sectorNumber);
     cacheLock->Release();
+
+    lock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -110,13 +110,19 @@ SynchDisk::ReadSector(int sectorNumber, char* data)
 void
 SynchDisk::WriteSector(int sectorNumber, char* data)
 {
-    cacheLock->Acquire();
-    cache.Delete(sectorNumber);
-    cacheLock->Release();
 
     lock->Acquire();			// only one disk I/O at a time
+    // cacheLock->Acquire();
+    // cache.Delete(sectorNumber);
+    // cacheLock->Release();
     disk->WriteRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
+
+    cacheLock->Acquire();
+    cache.Delete(sectorNumber);
+    cache.Add(data, sectorNumber);
+    cacheLock->Release();
+
     lock->Release();
 }
 
